@@ -1,0 +1,724 @@
+<!doctype html>
+<html lang="th">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>ต้นแบบแดชบอร์ดผู้ขาย</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500&family=IBM+Plex+Sans+Thai:wght@400;500;600&family=Sarabun:wght@400;500&display=swap">
+<style>
+:root {
+  --ground: #eef2f0;
+  --surface: #ffffff;
+  --surface-sunk: #f5f8f7;
+  --ink: #0f1f1c;
+  --ink-muted: #5a6d68;
+  --ink-faint: #8b9c97;
+  --line: #d8e3df;
+  --line-strong: #c2d1cc;
+  --accent: #0e6e63;
+  --accent-ink: #ffffff;
+  --accent-soft: #dcefeb;
+  --warn: #a35a00;
+  --warn-soft: #fdf0dc;
+  --good: #2e6b34;
+  --good-soft: #e2f0e2;
+  --panel: #12211f;
+  --panel-ink: #d6e4e0;
+  --panel-line: #263a36;
+  --panel-accent: #4fc3ae;
+  --shadow: 0 1px 2px rgba(15, 31, 28, .06), 0 8px 24px -12px rgba(15, 31, 28, .22);
+  --radius: 14px;
+  --radius-sm: 9px;
+  --ui: "IBM Plex Sans Thai", "Noto Sans Thai", system-ui, sans-serif;
+  --body: "Sarabun", "IBM Plex Sans Thai", system-ui, sans-serif;
+  --mono: "IBM Plex Mono", ui-monospace, SFMono-Regular, Menlo, monospace;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --ground: #0a1210;
+    --surface: #14201d;
+    --surface-sunk: #101a18;
+    --ink: #e6eeeb;
+    --ink-muted: #a0b2ad;
+    --ink-faint: #748a87;
+    --line: #26352f;
+    --line-strong: #33473f;
+    --accent: #46b8a3;
+    --accent-ink: #04211c;
+    --accent-soft: #16302b;
+    --warn: #e0a457;
+    --warn-soft: #2e2415;
+    --good: #7dc07f;
+    --good-soft: #1a2a1c;
+    --panel: #0c1614;
+    --panel-ink: #cadbd6;
+    --panel-line: #223330;
+    --panel-accent: #4fc3ae;
+    --shadow: 0 1px 2px rgba(0, 0, 0, .5), 0 10px 30px -14px rgba(0, 0, 0, .8);
+  }
+}
+:root[data-theme="dark"] {
+  --ground: #0a1210;
+  --surface: #14201d;
+  --surface-sunk: #101a18;
+  --ink: #e6eeeb;
+  --ink-muted: #a0b2ad;
+  --ink-faint: #748a87;
+  --line: #26352f;
+  --line-strong: #33473f;
+  --accent: #46b8a3;
+  --accent-ink: #04211c;
+  --accent-soft: #16302b;
+  --warn: #e0a457;
+  --warn-soft: #2e2415;
+  --good: #7dc07f;
+  --good-soft: #1a2a1c;
+  --panel: #0c1614;
+  --panel-ink: #cadbd6;
+  --panel-line: #223330;
+  --panel-accent: #4fc3ae;
+  --shadow: 0 1px 2px rgba(0, 0, 0, .5), 0 10px 30px -14px rgba(0, 0, 0, .8);
+}
+* { box-sizing: border-box; }
+body {
+  margin: 0;
+  background: var(--ground);
+  color: var(--ink);
+  font-family: var(--body);
+  font-size: 15px;
+  line-height: 1.6;
+  -webkit-font-smoothing: antialiased;
+}
+h1, h2, h3, h4 { font-family: var(--ui); font-weight: 600; margin: 0; text-wrap: balance; line-height: 1.3; }
+button { font: inherit; cursor: pointer; }
+:where(button, [tabindex]):focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; border-radius: 6px; }
+
+/* ---------- page shell ---------- */
+.stage {
+  display: grid;
+  gap: 20px;
+  padding: 20px 16px 48px;
+  max-width: 1120px;
+  margin: 0 auto;
+  grid-template-columns: minmax(0, 1fr);
+}
+@media (min-width: 900px) {
+  .stage { grid-template-columns: 392px minmax(0, 1fr); align-items: start; gap: 28px; padding-top: 32px; }
+}
+.pagehead { grid-column: 1 / -1; display: flex; flex-wrap: wrap; gap: 8px 16px; align-items: baseline; }
+.pagehead h1 { font-size: 19px; }
+.pagehead p { margin: 0; color: var(--ink-muted); font-size: 13px; }
+.tag {
+  font-family: var(--mono); font-size: 11px; letter-spacing: .04em;
+  border: 1px solid var(--line-strong); color: var(--ink-muted);
+  padding: 2px 7px; border-radius: 999px;
+}
+
+/* ---------- phone ---------- */
+.phone {
+  background: var(--surface);
+  border: 1px solid var(--line);
+  border-radius: 22px;
+  box-shadow: var(--shadow);
+  overflow: hidden;
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  min-height: 640px;
+}
+.appbar {
+  display: flex; align-items: center; justify-content: space-between; gap: 12px;
+  padding: 14px 16px 12px;
+  border-bottom: 1px solid var(--line);
+}
+.store { display: flex; align-items: center; gap: 10px; min-width: 0; }
+.avatar {
+  width: 38px; height: 38px; border-radius: 12px;
+  background: var(--accent-soft); color: var(--accent);
+  display: grid; place-items: center;
+  font-family: var(--ui); font-weight: 600; font-size: 14px;
+  flex: none;
+}
+.store strong { font-family: var(--ui); font-size: 15px; display: block; }
+.store span { color: var(--ink-faint); font-size: 12px; }
+.iconbtn {
+  border: 1px solid var(--line); background: var(--surface); color: var(--ink-muted);
+  width: 34px; height: 34px; border-radius: 10px; line-height: 1;
+}
+.seedbar {
+  background: var(--warn-soft); color: var(--warn);
+  font-family: var(--mono); font-size: 11px; letter-spacing: .01em;
+  padding: 7px 16px; border-bottom: 1px solid var(--line);
+}
+.screen { padding: 16px; display: flex; flex-direction: column; gap: 18px; flex: 1; }
+.section-label {
+  font-family: var(--ui); font-size: 11px; font-weight: 600; letter-spacing: .08em;
+  text-transform: uppercase; color: var(--ink-faint);
+  display: flex; align-items: center; justify-content: space-between; gap: 8px;
+}
+
+/* ---------- metrics ---------- */
+.metrics { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 8px; }
+.metric {
+  background: var(--surface-sunk); border: 1px solid var(--line);
+  border-radius: var(--radius-sm); padding: 10px 12px;
+}
+.metric .k { font-size: 11.5px; color: var(--ink-muted); font-family: var(--ui); }
+.metric .v {
+  font-family: var(--ui); font-weight: 600; font-size: 21px;
+  font-variant-numeric: tabular-nums; letter-spacing: -.01em;
+}
+.metric .v small { font-size: 12px; font-weight: 500; color: var(--ink-faint); }
+.metric.flag { background: var(--warn-soft); border-color: transparent; }
+.metric.flag .k, .metric.flag .v { color: var(--warn); }
+.metric.wide { grid-column: 1 / -1; }
+
+/* ---------- recommendation ---------- */
+.rec {
+  border: 1px solid var(--line-strong); border-radius: var(--radius);
+  background: var(--surface); overflow: hidden;
+}
+.rec-top {
+  display: flex; gap: 10px; align-items: flex-start;
+  padding: 14px 14px 0;
+}
+.rec-mark {
+  width: 30px; height: 30px; border-radius: 9px; flex: none;
+  background: var(--accent); color: var(--accent-ink);
+  display: grid; place-items: center; font-family: var(--ui); font-size: 15px; font-weight: 600;
+}
+.rec h3 { font-size: 15.5px; }
+.rec .eyebrow { font-family: var(--ui); font-size: 11px; letter-spacing: .07em; text-transform: uppercase; color: var(--accent); font-weight: 600; }
+.rec-body { padding: 6px 14px 0 54px; }
+.rec-body p { margin: 6px 0 0; }
+.placeholder-note {
+  margin-top: 10px; padding: 7px 9px; border-radius: 8px;
+  background: var(--surface-sunk); border: 1px dashed var(--line-strong);
+  font-family: var(--mono); font-size: 10.5px; line-height: 1.5; color: var(--ink-muted);
+}
+.rec-actions { display: flex; flex-wrap: wrap; gap: 8px; padding: 14px; }
+.btn {
+  border-radius: 10px; padding: 9px 14px; border: 1px solid transparent;
+  font-family: var(--ui); font-weight: 500; font-size: 14px;
+}
+.btn-primary { background: var(--accent); color: var(--accent-ink); }
+.btn-quiet { background: transparent; color: var(--ink-muted); border-color: var(--line-strong); }
+.btn-link {
+  background: none; border: none; color: var(--accent); padding: 0 2px;
+  font-family: var(--ui); font-size: 13px; text-decoration: underline; text-underline-offset: 3px;
+}
+.snapshot {
+  margin: 0 14px 14px; padding: 11px 12px; border-radius: var(--radius-sm);
+  background: var(--panel); color: var(--panel-ink);
+  font-family: var(--mono); font-size: 11px; line-height: 1.65;
+  overflow-x: auto;
+}
+.snapshot .cap { color: var(--panel-accent); display: block; margin-bottom: 4px; }
+.snapshot b { color: #fff; font-weight: 500; }
+:root[data-theme="dark"] .snapshot b { color: #eaf6f3; }
+[hidden] { display: none !important; }
+
+/* ---------- product list ---------- */
+.plist { display: flex; flex-direction: column; gap: 6px; }
+.pitem {
+  display: flex; align-items: center; gap: 10px;
+  padding: 9px 10px; border: 1px solid var(--line); border-radius: var(--radius-sm);
+  background: var(--surface);
+}
+.thumb {
+  width: 34px; height: 34px; border-radius: 8px; flex: none;
+  background: linear-gradient(135deg, var(--accent-soft), var(--surface-sunk));
+  border: 1px solid var(--line);
+}
+.pitem .nm { flex: 1; font-size: 14px; min-width: 0; }
+.chip {
+  font-family: var(--mono); font-size: 10.5px; padding: 3px 7px; border-radius: 999px;
+  background: var(--good-soft); color: var(--good); white-space: nowrap;
+}
+.chip.low { background: var(--warn-soft); color: var(--warn); }
+
+/* ---------- empty states ---------- */
+.empty {
+  border: 1px dashed var(--line-strong); border-radius: var(--radius);
+  padding: 22px 16px; text-align: center; color: var(--ink-muted);
+}
+.empty strong { display: block; font-family: var(--ui); color: var(--ink); margin-bottom: 4px; }
+
+/* ---------- sheet ---------- */
+.sheet-wrap { position: absolute; inset: 0; background: rgba(8, 20, 18, .42); display: flex; align-items: flex-end; }
+.sheet {
+  width: 100%; background: var(--surface); border-radius: 18px 18px 0 0;
+  border-top: 1px solid var(--line); padding: 16px; display: flex; flex-direction: column; gap: 12px;
+  animation: rise .18s ease-out;
+}
+@keyframes rise { from { transform: translateY(14px); opacity: .6; } to { transform: none; opacity: 1; } }
+@media (prefers-reduced-motion: reduce) { .sheet { animation: none; } }
+.shots { display: flex; gap: 8px; flex-wrap: wrap; }
+.shot { width: 56px; height: 56px; border-radius: 10px; background: linear-gradient(135deg, var(--accent-soft), var(--surface-sunk)); border: 1px solid var(--line); }
+.shot.new { border-color: var(--accent); }
+.toast {
+  position: absolute; left: 16px; right: 16px; bottom: 16px;
+  background: var(--panel); color: var(--panel-ink);
+  padding: 10px 12px; border-radius: 10px; font-size: 13px; font-family: var(--ui);
+}
+
+/* ---------- inspector ---------- */
+.inspector { display: flex; flex-direction: column; gap: 14px; }
+.card {
+  background: var(--surface); border: 1px solid var(--line);
+  border-radius: var(--radius); padding: 14px;
+}
+.card > h2 { font-size: 13px; letter-spacing: .02em; margin-bottom: 4px; }
+.card .hint { color: var(--ink-muted); font-size: 12.5px; margin: 0 0 12px; }
+.controls { display: flex; flex-wrap: wrap; gap: 14px; }
+.control { display: flex; flex-direction: column; gap: 6px; }
+.control > span { font-family: var(--ui); font-size: 11px; letter-spacing: .06em; text-transform: uppercase; color: var(--ink-faint); }
+.seg { display: inline-flex; border: 1px solid var(--line-strong); border-radius: 9px; overflow: hidden; }
+.seg button {
+  border: none; background: var(--surface); color: var(--ink-muted);
+  padding: 7px 12px; font-family: var(--ui); font-size: 13px;
+}
+.seg button + button { border-left: 1px solid var(--line-strong); }
+.seg button[aria-pressed="true"] { background: var(--accent); color: var(--accent-ink); }
+select {
+  font: inherit; font-size: 13px; padding: 7px 9px; border-radius: 9px;
+  border: 1px solid var(--line-strong); background: var(--surface); color: var(--ink);
+}
+.log {
+  background: var(--panel); border-radius: var(--radius-sm); padding: 10px;
+  font-family: var(--mono); font-size: 11px; line-height: 1.6; color: var(--panel-ink);
+  max-height: 260px; overflow: auto; display: flex; flex-direction: column-reverse; gap: 8px;
+}
+.log .row { border-left: 2px solid var(--panel-accent); padding-left: 8px; }
+.log .row .t { color: var(--panel-accent); }
+.log .row .p { color: #8fa39e; word-break: break-all; }
+.log .none { color: #6d8480; }
+.attr { display: grid; grid-template-columns: auto 1fr; gap: 4px 12px; font-size: 12.5px; }
+.attr dt { color: var(--ink-muted); font-family: var(--ui); font-size: 11.5px; }
+.attr dd { margin: 0; font-family: var(--mono); font-size: 11.5px; word-break: break-word; }
+.verdict { font-family: var(--ui); font-weight: 600; }
+.verdict.no { color: var(--ink-muted); }
+.verdict.yes { color: var(--good); }
+.rule { height: 1px; background: var(--line); margin: 12px 0; border: 0; }
+.foot { color: var(--ink-faint); font-size: 12px; }
+.foot code { font-family: var(--mono); font-size: 11px; }
+</style>
+</head>
+<body>
+<div class="stage">
+
+  <div class="pagehead">
+    <h1>ต้นแบบแดชบอร์ดผู้ขาย</h1>
+    <span class="tag">PR-01</span>
+    <span class="tag">UJ-01 ขั้นที่ 2–9</span>
+    <p>ซ้าย: สิ่งที่ผู้ขายเห็น &nbsp;·&nbsp; ขวา: สิ่งที่งานวิจัยบันทึก</p>
+  </div>
+
+  <section class="device" aria-label="หน้าจอผู้ขายบนมือถือ">
+    <div class="phone">
+      <header class="appbar">
+        <div class="store">
+          <span class="avatar" aria-hidden="true">ขน</span>
+          <div>
+            <strong>ร้านขนมพี่หมี</strong>
+            <span>ร้านตัวอย่างสำหรับต้นแบบ</span>
+          </div>
+        </div>
+        <button class="iconbtn" aria-label="เมนู">≡</button>
+      </header>
+
+      <p class="seedbar">is_seed = true — ข้อมูลสาธิต ไม่ถูกนับในผลวิเคราะห์</p>
+
+      <main class="screen">
+        <div>
+          <p class="section-label"><span>ภาพรวม 7 วัน</span><span id="asof">อัปเดตเมื่อสักครู่</span></p>
+          <div class="metrics" id="metrics">
+            <div class="metric"><div class="k">ผู้เข้าชมร้าน</div><div class="v" id="m-views">128</div></div>
+            <div class="metric"><div class="k">คำสั่งซื้อ</div><div class="v" id="m-orders">6</div></div>
+            <div class="metric"><div class="k">ยอดขาย</div><div class="v">฿1,240</div></div>
+            <div class="metric"><div class="k">สินค้าที่เผยแพร่</div><div class="v" id="m-published">6</div></div>
+            <div class="metric flag wide" id="m-gap-wrap">
+              <div class="k">สินค้าที่มีรูปน้อยกว่า 2 รูป</div>
+              <div class="v"><span id="m-gap">4</span> <small>จาก <span id="m-gap-total">6</span> รายการ</small></div>
+            </div>
+          </div>
+        </div>
+
+        <div id="rec-slot">
+          <p class="section-label"><span>คำแนะนำสำหรับร้านคุณ</span><span id="rec-variant-badge">variant A</span></p>
+
+          <article class="rec" id="rec-card">
+            <div class="rec-top">
+              <span class="rec-mark" aria-hidden="true">✦</span>
+              <div>
+                <span class="eyebrow">รูปสินค้า</span>
+                <h3 id="rec-title">เพิ่มรูปสินค้าที่ยังมีรูปเดียว</h3>
+              </div>
+            </div>
+            <div class="rec-body">
+              <p id="rec-text">สินค้า 4 รายการของคุณมีรูปเดียว เพิ่มอีกอย่างน้อยรายการละ 1 รูป</p>
+              <p class="placeholder-note">ข้อความตัวอย่างสำหรับต้นแบบเท่านั้น ไม่ใช่ copy ของการทดลอง — ข้อความจริงเขียนด้วย skill <code>variant-copy</code> และเก็บใน docs/03-research/experiments/</p>
+            </div>
+            <div class="rec-actions">
+              <button class="btn btn-primary" id="btn-act">เพิ่มรูปเลย</button>
+              <button class="btn btn-quiet" id="btn-dismiss">ไม่สนใจ</button>
+              <button class="btn-link" id="btn-why" aria-expanded="false" aria-controls="snapshot">ดูที่มาของตัวเลข</button>
+            </div>
+            <div class="snapshot" id="snapshot" hidden></div>
+          </article>
+
+          <div class="empty" id="rec-dismissed" hidden>
+            <strong>ปิดคำแนะนำนี้แล้ว</strong>
+            ดูสินค้าที่ยังมีรูปเดียวได้ในรายการด้านล่าง
+          </div>
+
+          <div class="empty" id="rec-none" hidden>
+            <strong>ยังไม่มีคำแนะนำ</strong>
+            ข้อมูลของร้านยังไม่พอจะอ้างอิงเป็นตัวเลขได้ ระบบจึงไม่แนะนำอะไร
+          </div>
+        </div>
+
+        <div id="products-slot">
+          <p class="section-label"><span>สินค้าของฉัน</span><span id="p-count">6 รายการ</span></p>
+          <div class="plist" id="plist"></div>
+        </div>
+
+        <div class="empty" id="store-empty" hidden>
+          <strong>ยังไม่มีสินค้าที่เผยแพร่</strong>
+          เพิ่มสินค้าชิ้นแรกเพื่อเริ่มขาย ระบบจะยังไม่ส่งคำแนะนำจนกว่าจะมีสินค้า
+        </div>
+      </main>
+
+      <div class="sheet-wrap" id="sheet" hidden>
+        <div class="sheet" role="dialog" aria-modal="true" aria-labelledby="sheet-title">
+          <h3 id="sheet-title">รูปสินค้า — <span id="sheet-product">ขนมปังสังขยา</span></h3>
+          <div class="shots" id="shots"></div>
+          <div style="display:flex; gap:8px; flex-wrap:wrap">
+            <button class="btn btn-primary" id="btn-upload">เพิ่มรูป</button>
+            <button class="btn btn-quiet" id="btn-close-sheet">เสร็จแล้ว</button>
+          </div>
+          <p class="foot" style="margin:0">ต้นแบบจำลองการอัปโหลด ของจริงจะบันทึก <code>product.photo_added</code> หลังไฟล์เขียนสำเร็จเท่านั้น</p>
+        </div>
+      </div>
+
+      <div class="toast" id="toast" hidden></div>
+    </div>
+  </section>
+
+  <aside class="inspector" aria-label="แผงตรวจสอบสำหรับงานวิจัย">
+    <div class="card">
+      <h2>แผงควบคุมต้นแบบ</h2>
+      <p class="hint">ปุ่มชุดนี้ไม่มีในของจริง ในระบบจริงเซิร์ฟเวอร์เป็นผู้กำหนด variant ครั้งเดียวแล้วบันทึกลงตาราง <code>Assignment</code> หน้าเว็บไม่เคยสุ่มเอง</p>
+      <div class="controls">
+        <label class="control">
+          <span>variant</span>
+          <span class="seg" id="seg-variant">
+            <button type="button" data-v="A" aria-pressed="true">A · สั่ง</button>
+            <button type="button" data-v="B" aria-pressed="false">B · เทียบ</button>
+          </span>
+        </label>
+        <label class="control">
+          <span>สถานะหน้าจอ</span>
+          <select id="sel-state">
+            <option value="normal">ปกติ — มีคำแนะนำ</option>
+            <option value="dismissed">ผู้ขายกดไม่สนใจ (ALT-1)</option>
+            <option value="empty">ร้านยังไม่มีสินค้า (ALT-5)</option>
+            <option value="ungrounded">อ้างอิงตัวเลขไม่ได้ (ALT-6)</option>
+          </select>
+        </label>
+      </div>
+    </div>
+
+    <div class="card">
+      <h2>Event ที่ระบบบันทึก</h2>
+      <p class="hint">ทุกการกดในต้นแบบนี้เขียนหนึ่งแถวเหมือนตาราง <code>Event</code> — payload มีแต่ ID และตัวเลข ไม่มีชื่อ เบอร์ ที่อยู่ หรืออีเมล</p>
+      <div class="log" id="log" aria-live="polite"><span class="none">ยังไม่มี event</span></div>
+    </div>
+
+    <div class="card">
+      <h2>การนับผล 7 วัน</h2>
+      <dl class="attr">
+        <dt>recommendation</dt><dd id="a-rec">—</dd>
+        <dt>variant</dt><dd id="a-variant">—</dd>
+        <dt>action_type</dt><dd>photo_added</dd>
+        <dt>event ที่ตรวจจับ</dt><dd>product.photo_added</dd>
+        <dt>delivered_at</dt><dd id="a-delivered">—</dd>
+        <dt>ปิดหน้าต่าง</dt><dd id="a-window">—</dd>
+      </dl>
+      <hr class="rule">
+      <p style="margin:0">ผลการนับ: <span class="verdict no" id="a-verdict">ยังไม่นับว่าลงมือทำ</span></p>
+      <p class="foot" id="a-note" style="margin-top:6px">รอ event <code>product.photo_added</code> ของร้านนี้ภายในหน้าต่าง 7 วัน</p>
+      <p class="foot" id="a-drift" style="margin-top:6px" hidden>ตัวเลขบนการ์ดยังเป็น <b id="drift-snap"></b> ขณะที่ข้อมูลสดเป็น <b id="drift-live"></b> — ถูกต้องแล้ว <code>metric_snapshot</code> ถูกตรึงไว้ตอนส่งคำแนะนำ (TS-01-05)</p>
+    </div>
+
+    <p class="foot">
+      ต้นแบบสำหรับ <code>docs/02-design/prototypes/PR-01-seller-dashboard.md</code> —
+      ตัวเลขทั้งหมดเป็นข้อมูลสาธิต ไม่ใช่ข้อมูลผู้ขายจริง
+    </p>
+  </aside>
+</div>
+
+<script>
+(function () {
+  "use strict";
+
+  var STORE_ID = "str_7f3a";
+  var REC_ID = "rec_2b91";
+  var EXP_ID = "exp_001";
+  var VARIANTS = { A: "var_a1", B: "var_b2" };
+
+  var products = [
+    { id: "prd_01", name: "ขนมปังสังขยา", photos: 1 },
+    { id: "prd_02", name: "คุกกี้เนยสด", photos: 1 },
+    { id: "prd_03", name: "บราวนี่กรอบ", photos: 1 },
+    { id: "prd_04", name: "ชาไทยขวด", photos: 1 },
+    { id: "prd_05", name: "พายสับปะรด", photos: 3 },
+    { id: "prd_06", name: "มัฟฟินกล้วยหอม", photos: 2 }
+  ];
+
+  /* ข้อความทุกบรรทัดประกอบขึ้นจากค่าใน metric_snapshot ไม่มีตัวเลขที่พิมพ์ทิ้งไว้ตายตัว */
+  var copy = {
+    A: {
+      title: "เพิ่มรูปสินค้าที่ยังมีรูปเดียว",
+      text: function (s) {
+        return "สินค้า " + s.products_under_2_photos + " รายการของคุณมีรูปเดียว เพิ่มอีกอย่างน้อยรายการละ 1 รูป";
+      }
+    },
+    B: {
+      title: "ร้านในหมวดเดียวกันลงรูปมากกว่า",
+      text: function (s) {
+        return "สินค้าของคุณ " + s.products_under_2_photos + " จาก " + s.published_products +
+               " รายการมีรูปเดียว ร้านขนมในระบบมีเฉลี่ย " + s.category_avg_photos + " รูปต่อสินค้า";
+      }
+    }
+  };
+
+  var state = { variant: "A", screen: "normal", acted: false, deliveredAt: null, openProduct: null, snap: null };
+
+  var $ = function (id) { return document.getElementById(id); };
+
+  function fmtTime(d) {
+    return d.toLocaleTimeString("th-TH", { hour: "2-digit", minute: "2-digit", second: "2-digit" });
+  }
+  function fmtDate(d) {
+    return d.toLocaleDateString("th-TH", { day: "numeric", month: "short" }) + " " +
+           d.toLocaleTimeString("th-TH", { hour: "2-digit", minute: "2-digit" });
+  }
+
+  function emit(type, payload) {
+    var box = $("log");
+    var none = box.querySelector(".none");
+    if (none) { none.remove(); }
+    var row = document.createElement("div");
+    row.className = "row";
+    var head = document.createElement("div");
+    head.innerHTML = '<span class="t">' + type + "</span> · seller · " + STORE_ID;
+    var pay = document.createElement("div");
+    pay.className = "p";
+    pay.textContent = fmtTime(new Date()) + "  " + JSON.stringify(payload);
+    row.appendChild(head);
+    row.appendChild(pay);
+    box.appendChild(row);
+  }
+
+  function liveGap() {
+    return products.filter(function (p) { return p.photos < 2; }).length;
+  }
+
+  /* ตรึงตัวเลขไว้ตอนส่งคำแนะนำ หลังจากนี้ข้อมูลร้านเปลี่ยนได้ แต่ snapshot ต้องไม่เปลี่ยน — TS-01-05 */
+  function freezeSnapshot() {
+    state.snap = {
+      store_id: STORE_ID,
+      published_products: products.length,
+      products_under_2_photos: liveGap(),
+      threshold_photos: 2
+    };
+  }
+
+  function snapshotFor(variant) {
+    var snap = {};
+    Object.keys(state.snap).forEach(function (k) { snap[k] = state.snap[k]; });
+    if (variant === "B") {
+      snap.category = "snacks";
+      snap.category_avg_photos = 3;
+    }
+    return snap;
+  }
+
+  function renderSnapshot() {
+    var snap = snapshotFor(state.variant);
+    var lines = Object.keys(snap).map(function (k) {
+      return "  " + k + ": <b>" + JSON.stringify(snap[k]) + "</b>";
+    });
+    $("snapshot").innerHTML =
+      '<span class="cap">metric_snapshot ที่เก็บไว้ตอนสร้างคำแนะนำ</span>{\n' +
+      lines.join(",\n") + "\n}";
+  }
+
+  function renderProducts() {
+    var list = $("plist");
+    list.innerHTML = "";
+    products.forEach(function (p) {
+      var item = document.createElement("div");
+      item.className = "pitem";
+      var low = p.photos < 2;
+      item.innerHTML =
+        '<span class="thumb" aria-hidden="true"></span>' +
+        '<span class="nm">' + p.name + "</span>" +
+        '<span class="chip' + (low ? " low" : "") + '">' + p.photos + " รูป</span>";
+      list.appendChild(item);
+    });
+    var gap = liveGap();
+    $("m-gap").textContent = gap;
+    $("m-gap-total").textContent = products.length;
+    $("m-published").textContent = products.length;
+    $("p-count").textContent = products.length + " รายการ";
+    $("m-gap-wrap").hidden = gap === 0;
+    if (state.snap && gap !== state.snap.products_under_2_photos) {
+      $("drift-snap").textContent = state.snap.products_under_2_photos + " รายการ";
+      $("drift-live").textContent = gap + " รายการ";
+      $("a-drift").hidden = false;
+    }
+  }
+
+  function renderVariant() {
+    var snap = snapshotFor(state.variant);
+    $("rec-title").textContent = copy[state.variant].title;
+    $("rec-text").textContent = copy[state.variant].text(snap);
+    $("rec-variant-badge").textContent = "variant " + state.variant;
+    $("a-variant").textContent = VARIANTS[state.variant] + " (" + state.variant + ")";
+    renderSnapshot();
+  }
+
+  function renderScreen() {
+    var s = state.screen;
+    $("rec-card").hidden = s !== "normal";
+    $("rec-dismissed").hidden = s !== "dismissed";
+    $("rec-none").hidden = s !== "ungrounded";
+    $("rec-slot").hidden = s === "empty";
+    $("products-slot").hidden = s === "empty";
+    $("store-empty").hidden = s !== "empty";
+    $("metrics").hidden = s === "empty";
+  }
+
+  function deliver() {
+    state.deliveredAt = new Date();
+    $("a-rec").textContent = REC_ID;
+    $("a-delivered").textContent = fmtDate(state.deliveredAt);
+    var end = new Date(state.deliveredAt.getTime() + 7 * 24 * 3600 * 1000);
+    $("a-window").textContent = fmtDate(end);
+    emit("recommendation.delivered", {
+      recommendation_id: REC_ID, experiment_id: EXP_ID,
+      variant_id: VARIANTS[state.variant], action_type: "photo_added"
+    });
+    emit("recommendation.viewed", { recommendation_id: REC_ID });
+  }
+
+  function toast(msg) {
+    var t = $("toast");
+    t.textContent = msg;
+    t.hidden = false;
+    window.clearTimeout(t._h);
+    t._h = window.setTimeout(function () { t.hidden = true; }, 2600);
+  }
+
+  function markActed() {
+    if (state.acted) { return; }
+    state.acted = true;
+    var v = $("a-verdict");
+    v.className = "verdict yes";
+    v.textContent = "นับว่าลงมือทำแล้ว";
+    $("a-note").innerHTML = "พบ <code>product.photo_added</code> ของร้านนี้ภายใน 7 วันหลัง delivered_at";
+  }
+
+  function openSheet(product) {
+    state.openProduct = product;
+    $("sheet-product").textContent = product.name;
+    renderShots();
+    $("sheet").hidden = false;
+    $("btn-upload").focus();
+  }
+
+  function renderShots() {
+    var box = $("shots");
+    box.innerHTML = "";
+    for (var i = 0; i < state.openProduct.photos; i++) {
+      var s = document.createElement("span");
+      s.className = "shot" + (i > 0 ? " new" : "");
+      box.appendChild(s);
+    }
+  }
+
+  /* --- events --- */
+
+  $("btn-why").addEventListener("click", function () {
+    var open = $("snapshot").hidden;
+    $("snapshot").hidden = !open;
+    this.setAttribute("aria-expanded", String(open));
+    this.textContent = open ? "ซ่อนที่มาของตัวเลข" : "ดูที่มาของตัวเลข";
+    if (open) { emit("recommendation.opened", { recommendation_id: REC_ID }); }
+  });
+
+  $("btn-dismiss").addEventListener("click", function () {
+    emit("recommendation.dismissed", { recommendation_id: REC_ID, variant_id: VARIANTS[state.variant] });
+    state.screen = "dismissed";
+    $("sel-state").value = "dismissed";
+    renderScreen();
+    /* ข้อความสำหรับผู้วิจัย อยู่ในแผงขวาเท่านั้น ไม่ปนกับสิ่งที่ผู้ขายเห็น */
+    if (!state.acted) {
+      $("a-note").innerHTML = "ผู้ขายกดไม่สนใจ — ยังอยู่ในตัวส่วนของอัตราการลงมือทำ ตาม analysis-plan.md";
+    }
+    toast("ปิดคำแนะนำแล้ว");
+  });
+
+  $("btn-act").addEventListener("click", function () {
+    openSheet(products[0]);
+  });
+
+  $("btn-upload").addEventListener("click", function () {
+    var p = state.openProduct;
+    var before = p.photos;
+    p.photos += 1;
+    renderShots();
+    renderProducts();
+    emit("product.photo_added", {
+      product_id: p.id, photos_before: before, photos_after: p.photos
+    });
+    markActed();
+    toast("เพิ่มรูปแล้ว " + p.photos + " รูป");
+  });
+
+  $("btn-close-sheet").addEventListener("click", function () {
+    $("sheet").hidden = true;
+    $("btn-act").focus();
+  });
+
+  $("seg-variant").addEventListener("click", function (e) {
+    var b = e.target.closest("button");
+    if (!b) { return; }
+    state.variant = b.dataset.v;
+    Array.prototype.forEach.call(this.querySelectorAll("button"), function (x) {
+      x.setAttribute("aria-pressed", String(x.dataset.v === state.variant));
+    });
+    renderVariant();
+    toast("สลับ variant เพื่อสาธิตเท่านั้น");
+  });
+
+  $("sel-state").addEventListener("change", function () {
+    state.screen = this.value;
+    renderScreen();
+  });
+
+  /* --- first paint --- */
+  freezeSnapshot();
+  renderProducts();
+  renderVariant();
+  renderScreen();
+  emit("dashboard.viewed", { period_days: 7 });
+  deliver();
+})();
+</script>
+</body>
+</html>

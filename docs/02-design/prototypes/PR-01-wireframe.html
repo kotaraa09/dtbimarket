@@ -1,0 +1,285 @@
+<!doctype html>
+<html lang="th">
+<head>
+<meta charset="utf-8">
+<title>PR-01 Wireframe — แดชบอร์ดผู้ขาย</title>
+<style>
+  * { box-sizing: border-box; }
+  body {
+    margin: 0; padding: 28px 32px 36px;
+    background: #eceded;
+    color: #222;
+    font-family: "Leelawadee UI", Tahoma, "Segoe UI", sans-serif;
+    font-size: 13px; line-height: 1.5;
+  }
+  .board { width: 1376px; }
+  .boardhead { display: flex; align-items: baseline; gap: 14px; border-bottom: 1px solid #c3c5c5; padding-bottom: 10px; margin-bottom: 22px; }
+  .boardhead h1 { font-size: 17px; margin: 0; font-weight: 600; }
+  .boardhead .meta { color: #6b6f6f; font-size: 12px; }
+  .boardhead .meta b { font-weight: 600; color: #444; }
+
+  .row { display: flex; gap: 26px; align-items: flex-start; }
+  .col { width: 336px; }
+  .frametitle { font-size: 12px; font-weight: 600; margin-bottom: 7px; color: #444; }
+  .frametitle span { font-weight: 400; color: #7c8080; }
+
+  /* overflow ต้องเป็น visible ไม่งั้นตัวเลขหมายเหตุที่วางนอกกรอบจะถูกตัด */
+  .frame {
+    width: 336px; background: #fff; border: 1px solid #9a9e9e; border-radius: 4px;
+    position: relative; overflow: visible;
+  }
+  .bar { border-bottom: 1px solid #c9cccc; padding: 9px 12px; display: flex; align-items: center; gap: 9px; }
+  .bar .box { width: 30px; height: 30px; }
+  .bar .lines { flex: 1; }
+  .body { padding: 12px; display: flex; flex-direction: column; gap: 14px; }
+
+  .box { border: 1px solid #b4b8b8; background: #f5f6f6; }
+  .ph {
+    border: 1px solid #b4b8b8; background:
+      linear-gradient(to top right, transparent calc(50% - 1px), #c8cbcb 50%, transparent calc(50% + 1px)),
+      linear-gradient(to bottom right, transparent calc(50% - 1px), #c8cbcb 50%, transparent calc(50% + 1px)),
+      #f7f8f8;
+  }
+  .txt { background: #cfd2d2; height: 8px; border-radius: 2px; }
+  .txt.s { width: 45%; } .txt.m { width: 70%; } .txt.l { width: 92%; }
+  .txt.dark { background: #a9adad; }
+  .stack { display: flex; flex-direction: column; gap: 5px; }
+
+  .label { font-size: 11px; color: #6b6f6f; letter-spacing: .02em; }
+  .strong { font-size: 13px; font-weight: 600; }
+  .sectionhead { display: flex; justify-content: space-between; align-items: center; margin-bottom: 6px; }
+
+  .tiles { display: grid; grid-template-columns: 1fr 1fr; gap: 6px; }
+  .tile { border: 1px solid #b4b8b8; background: #fafbfb; padding: 7px 9px; }
+  .tile .n { font-size: 17px; font-weight: 600; letter-spacing: -.01em; }
+  .tile.wide { grid-column: 1 / -1; background: #f0f0f0; border-style: dashed; }
+
+  .card { border: 1px solid #7f8484; background: #fff; }
+  .card .top { display: flex; gap: 9px; padding: 11px 11px 0; }
+  .card .mark { width: 26px; height: 26px; flex: none; }
+  .card .content { flex: 1; }
+  .card .acts { display: flex; gap: 7px; padding: 11px; flex-wrap: wrap; }
+  .btn { border: 1px solid #7f8484; padding: 7px 12px; font-size: 12px; background: #f2f3f3; }
+  .btn.fill { background: #6f7575; color: #fff; border-color: #6f7575; }
+  .btn.ghost { background: #fff; }
+  .btn.text { border: none; background: none; text-decoration: underline; padding: 7px 2px; color: #555; }
+
+  .plist { display: flex; flex-direction: column; gap: 5px; }
+  .pitem { display: flex; align-items: center; gap: 9px; border: 1px solid #c9cccc; padding: 7px 9px; }
+  .pitem .ph { width: 28px; height: 28px; flex: none; }
+  .pitem .nm { flex: 1; }
+  .badge { border: 1px solid #b4b8b8; font-size: 10.5px; padding: 2px 6px; color: #555; background: #fafbfb; }
+  .badge.alert { border-style: dashed; border-color: #7f8484; color: #222; }
+
+  .empty { border: 1px dashed #9a9e9e; background: #fafbfb; padding: 20px 14px; text-align: center; }
+  .empty .strong { margin-bottom: 5px; }
+
+  .scrim { position: absolute; inset: 0; background: rgba(60, 64, 64, .28); }
+  .sheet { position: absolute; left: 0; right: 0; bottom: 0; background: #fff; border-top: 1px solid #7f8484; padding: 12px; display: flex; flex-direction: column; gap: 10px; }
+  .shots { display: flex; gap: 7px; }
+  .shots .ph { width: 52px; height: 52px; }
+  .shots .add { display: grid; place-items: center; font-size: 19px; color: #7f8484; border: 1px dashed #7f8484; background: #fafbfb; width: 52px; height: 52px; }
+
+  .callout {
+    position: absolute; width: 19px; height: 19px; border-radius: 50%;
+    background: #2f3434; color: #fff; font-size: 11px; font-weight: 600;
+    display: grid; place-items: center; z-index: 5;
+  }
+  .notes { width: 300px; }
+  .notes h2 { font-size: 12px; margin: 0 0 8px; font-weight: 600; }
+  .notes ol { margin: 0; padding: 0; list-style: none; display: flex; flex-direction: column; gap: 9px; counter-reset: n; }
+  .notes li { display: flex; gap: 9px; font-size: 12px; color: #3d4141; }
+  .notes li b {
+    flex: none; width: 19px; height: 19px; border-radius: 50%; background: #2f3434; color: #fff;
+    font-size: 11px; display: grid; place-items: center; font-weight: 600;
+  }
+  .notes .rule { height: 1px; background: #c3c5c5; margin: 16px 0 12px; }
+  .notes p { margin: 0 0 8px; font-size: 12px; color: #5c6060; }
+  .notes p:last-child { margin-bottom: 0; }
+</style>
+</head>
+<body>
+<div class="board">
+
+  <div class="boardhead">
+    <h1>PR-01 · Wireframe — แดชบอร์ดผู้ขาย</h1>
+    <span class="meta"><b>UJ-01</b> ขั้นที่ 2–9 &nbsp;·&nbsp; <b>FEAT-D1, E3, B4</b> &nbsp;·&nbsp; มือถือ 360 px &nbsp;·&nbsp; 2026-08-28</span>
+  </div>
+
+  <div class="row">
+
+    <!-- FRAME A -->
+    <div class="col">
+      <p class="frametitle">A · แดชบอร์ด <span>— หน้าแรกหลังผู้ขายเข้าสู่ระบบ</span></p>
+      <div class="frame">
+        <span class="callout" style="top:12px; left:-9px">1</span>
+        <span class="callout" style="top:150px; left:-9px">2</span>
+        <span class="callout" style="top:246px; left:-9px">3</span>
+        <span class="callout" style="top:352px; left:-9px">4</span>
+        <span class="callout" style="top:470px; left:-9px">5</span>
+
+        <div class="bar">
+          <div class="box" style="border-radius:7px"></div>
+          <div class="lines stack">
+            <div class="txt m dark"></div>
+            <div class="txt s"></div>
+          </div>
+          <div class="box" style="width:26px; height:26px"></div>
+        </div>
+
+        <div class="body">
+          <div>
+            <div class="sectionhead"><span class="label">ภาพรวม 7 วัน</span><span class="label">ตัวกรองช่วงเวลา</span></div>
+            <div class="tiles">
+              <div class="tile"><div class="label">ผู้เข้าชม</div><div class="n">128</div></div>
+              <div class="tile"><div class="label">คำสั่งซื้อ</div><div class="n">6</div></div>
+              <div class="tile"><div class="label">ยอดขาย</div><div class="n">฿1,240</div></div>
+              <div class="tile"><div class="label">สินค้าเผยแพร่</div><div class="n">6</div></div>
+              <div class="tile wide"><div class="label">สินค้าที่มีรูปน้อยกว่า 2 รูป</div><div class="n">4 <span style="font-size:12px; font-weight:400">จาก 6</span></div></div>
+            </div>
+          </div>
+
+          <div>
+            <div class="sectionhead"><span class="label">คำแนะนำสำหรับร้านคุณ</span></div>
+            <div class="card">
+              <div class="top">
+                <div class="mark box"></div>
+                <div class="content stack">
+                  <div class="strong">เพิ่มรูปสินค้าที่ยังมีรูปเดียว</div>
+                  <div class="txt l"></div>
+                  <div class="txt m"></div>
+                </div>
+              </div>
+              <div class="acts">
+                <span class="btn fill">เพิ่มรูปเลย</span>
+                <span class="btn ghost">ไม่สนใจ</span>
+                <span class="btn text">ดูที่มาของตัวเลข</span>
+              </div>
+            </div>
+          </div>
+
+          <div>
+            <div class="sectionhead"><span class="label">สินค้าของฉัน</span><span class="label">6 รายการ</span></div>
+            <div class="plist">
+              <div class="pitem"><span class="ph"></span><span class="nm stack"><span class="txt m dark"></span></span><span class="badge alert">1 รูป</span></div>
+              <div class="pitem"><span class="ph"></span><span class="nm stack"><span class="txt s dark"></span></span><span class="badge alert">1 รูป</span></div>
+              <div class="pitem"><span class="ph"></span><span class="nm stack"><span class="txt m dark"></span></span><span class="badge alert">1 รูป</span></div>
+              <div class="pitem"><span class="ph"></span><span class="nm stack"><span class="txt s dark"></span></span><span class="badge">3 รูป</span></div>
+              <div class="pitem"><span class="ph"></span><span class="nm stack"><span class="txt m dark"></span></span><span class="badge">2 รูป</span></div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- FRAME B -->
+    <div class="col">
+      <p class="frametitle">B · เพิ่มรูปสินค้า <span>— แผ่นเลื่อนขึ้นบนหน้าเดิม</span></p>
+      <div class="frame" style="height:640px">
+        <span class="callout" style="top:352px; left:-9px">6</span>
+        <span class="callout" style="top:470px; left:-9px">7</span>
+
+        <div class="bar">
+          <div class="box" style="border-radius:7px"></div>
+          <div class="lines stack"><div class="txt m dark"></div><div class="txt s"></div></div>
+          <div class="box" style="width:26px; height:26px"></div>
+        </div>
+        <div class="body">
+          <div class="tiles">
+            <div class="tile"><div class="label">ผู้เข้าชม</div><div class="n">128</div></div>
+            <div class="tile"><div class="label">คำสั่งซื้อ</div><div class="n">6</div></div>
+          </div>
+          <div class="card">
+            <div class="top">
+              <div class="mark box"></div>
+              <div class="content stack"><div class="strong">เพิ่มรูปสินค้าที่ยังมีรูปเดียว</div><div class="txt l"></div></div>
+            </div>
+            <div class="acts"><span class="btn fill">เพิ่มรูปเลย</span><span class="btn ghost">ไม่สนใจ</span></div>
+          </div>
+        </div>
+
+        <div class="scrim"></div>
+        <div class="sheet">
+          <div class="stack">
+            <span class="strong">รูปสินค้า — ขนมปังสังขยา</span>
+            <span class="label">รองรับ .jpg .png ไม่เกิน 5 MB ต่อรูป</span>
+          </div>
+          <div class="shots">
+            <span class="ph"></span>
+            <span class="add">+</span>
+          </div>
+          <div style="display:flex; gap:7px">
+            <span class="btn fill">เลือกรูปจากเครื่อง</span>
+            <span class="btn ghost">เสร็จแล้ว</span>
+          </div>
+          <span class="label">บันทึกแล้ว 1 รูป — แนะนำอย่างน้อย 2 รูปต่อสินค้า</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- FRAME C -->
+    <div class="col">
+      <p class="frametitle">C · สถานะอื่น <span>— ต้องออกแบบพร้อมหน้าหลัก</span></p>
+
+      <div class="frame" style="margin-bottom:16px">
+        <span class="callout" style="top:64px; left:-9px">8</span>
+        <div class="bar">
+          <div class="box" style="border-radius:7px"></div>
+          <div class="lines stack"><div class="txt m dark"></div><div class="txt s"></div></div>
+          <div class="box" style="width:26px; height:26px"></div>
+        </div>
+        <div class="body">
+          <div class="sectionhead"><span class="label">คำแนะนำสำหรับร้านคุณ</span></div>
+          <div class="empty">
+            <div class="strong">ปิดคำแนะนำนี้แล้ว</div>
+            <div class="label">ดูสินค้าที่ยังมีรูปเดียวได้ในรายการด้านล่าง</div>
+          </div>
+          <div class="plist">
+            <div class="pitem"><span class="ph"></span><span class="nm stack"><span class="txt m dark"></span></span><span class="badge alert">1 รูป</span></div>
+            <div class="pitem"><span class="ph"></span><span class="nm stack"><span class="txt s dark"></span></span><span class="badge alert">1 รูป</span></div>
+          </div>
+        </div>
+      </div>
+
+      <div class="frame">
+        <span class="callout" style="top:64px; left:-9px">9</span>
+        <div class="bar">
+          <div class="box" style="border-radius:7px"></div>
+          <div class="lines stack"><div class="txt m dark"></div><div class="txt s"></div></div>
+          <div class="box" style="width:26px; height:26px"></div>
+        </div>
+        <div class="body">
+          <div class="empty" style="padding:30px 14px">
+            <div class="strong">ยังไม่มีสินค้าที่เผยแพร่</div>
+            <div class="label">เพิ่มสินค้าชิ้นแรกเพื่อเริ่มขาย</div>
+            <div style="margin-top:12px"><span class="btn fill">เพิ่มสินค้า</span></div>
+          </div>
+          <span class="label" style="text-align:center">ยังไม่แสดงคำแนะนำจนกว่าจะมีสินค้าอย่างน้อย 1 ชิ้น</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- NOTES -->
+    <div class="notes">
+      <h2>หมายเหตุประกอบแบบ</h2>
+      <ol>
+        <li><b>1</b><span>แถบร้าน: โลโก้ ชื่อร้าน และเมนู แตะชื่อร้านไปหน้าแก้ไขโปรไฟล์ร้าน</span></li>
+        <li><b>2</b><span>ตัวเลข 7 วัน 4 ช่อง อ่านได้ในหน้าจอเดียวโดยไม่ต้องเลื่อน</span></li>
+        <li><b>3</b><span>ช่องเต็มแถว เส้นประ = ตัวเลขที่ต้องแก้ ไม่ใช่แค่รายงาน วางไว้ติดกับการ์ดคำแนะนำ</span></li>
+        <li><b>4</b><span>การ์ดคำแนะนำ: หัวข้อ เหตุผลสองบรรทัด ปุ่มหลักหนึ่งปุ่ม ปุ่มปิดหนึ่งปุ่ม ลิงก์ดูที่มาของตัวเลข</span></li>
+        <li><b>5</b><span>รายการสินค้าเรียงให้รายการที่มีรูปน้อยอยู่บนสุด ป้ายจำนวนรูปเป็นเส้นประเมื่อน้อยกว่า 2</span></li>
+        <li><b>6</b><span>ปุ่มหลักเปิดแผ่นเลื่อนบนหน้าเดิม ไม่พาออกจากแดชบอร์ด ระยะจากคำแนะนำถึงการลงมือทำต้องสั้นและเท่ากันทุกกรณี</span></li>
+        <li><b>7</b><span>ช่องรูปเปล่ามีเครื่องหมาย + เห็นทันทีว่ายังใส่ได้อีก บอกจำนวนที่บันทึกแล้วใต้ปุ่ม</span></li>
+        <li><b>8</b><span>เมื่อกดไม่สนใจ การ์ดหายไปแต่ไม่ทิ้งหน้าว่าง แทนที่ด้วยข้อความสั้นและทางไปต่อ</span></li>
+        <li><b>9</b><span>ร้านที่ยังไม่มีสินค้าไม่แสดงคำแนะนำ เพราะยังไม่มีข้อมูลพอจะแนะนำอะไรได้</span></li>
+      </ol>
+      <div class="rule"></div>
+      <p><b>ขนาด</b> ออกแบบที่ความกว้าง 360 px ก่อน เพราะผู้ขายใช้มือถือเป็นหลัก</p>
+      <p><b>ยังไม่ตัดสินในแบบนี้</b> สี ฟอนต์ ไอคอน และเมนูหลักของแอป</p>
+      <p><b>เนื้อหาในกล่องเทา</b> เป็นตัวแทนข้อความจริง ไม่ใช่ความยาวสุดท้าย</p>
+    </div>
+
+  </div>
+</div>
+</body>
+</html>
