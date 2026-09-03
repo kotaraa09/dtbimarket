@@ -1,0 +1,247 @@
+/*
+ * Design tokens lifted verbatim from the approved prototype at
+ * docs/02-design/prototypes/PR-01-seller-dashboard.html.
+ *
+ * They are copied rather than re-invented so the built app and the prototype
+ * that was reviewed cannot drift apart. If a token changes, change it there
+ * first — the prototype is what gets shown in the thesis.
+ */
+
+:root {
+  --ground: #eef2f0;
+  --surface: #ffffff;
+  --surface-sunk: #f5f8f7;
+  --ink: #0f1f1c;
+  --ink-muted: #5a6d68;
+  --ink-faint: #8b9c97;
+  --line: #d8e3df;
+  --line-strong: #c2d1cc;
+  --accent: #0e6e63;
+  --accent-ink: #ffffff;
+  --accent-soft: #dcefeb;
+  --warn: #a35a00;
+  --warn-soft: #fdf0dc;
+  --good: #2e6b34;
+  --good-soft: #e2f0e2;
+  --panel: #12211f;
+  --panel-ink: #d6e4e0;
+  --panel-line: #263a36;
+  --panel-accent: #4fc3ae;
+  --shadow: 0 1px 2px rgba(15, 31, 28, .06), 0 8px 24px -12px rgba(15, 31, 28, .22);
+  --radius: 14px;
+  --radius-sm: 9px;
+  --ui: "IBM Plex Sans Thai", "Noto Sans Thai", system-ui, sans-serif;
+  --body: "Sarabun", "IBM Plex Sans Thai", system-ui, sans-serif;
+  --mono: "IBM Plex Mono", ui-monospace, SFMono-Regular, Menlo, monospace;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --ground: #0a1210;
+    --surface: #14201d;
+    --surface-sunk: #101a18;
+    --ink: #e6eeeb;
+    --ink-muted: #a0b2ad;
+    --ink-faint: #748a87;
+    --line: #26352f;
+    --line-strong: #33473f;
+    --accent: #46b8a3;
+    --accent-ink: #04211c;
+    --accent-soft: #16302b;
+    --warn: #e0a457;
+    --warn-soft: #2e2415;
+    --good: #7dc07f;
+    --good-soft: #1a2a1c;
+    --panel: #0c1614;
+    --panel-ink: #cadbd6;
+    --panel-line: #223330;
+    --panel-accent: #4fc3ae;
+    --shadow: 0 1px 2px rgba(0, 0, 0, .5), 0 10px 30px -14px rgba(0, 0, 0, .8);
+  }
+}
+:root[data-theme="dark"] {
+  --ground: #0a1210;
+  --surface: #14201d;
+  --surface-sunk: #101a18;
+  --ink: #e6eeeb;
+  --ink-muted: #a0b2ad;
+  --ink-faint: #748a87;
+  --line: #26352f;
+  --line-strong: #33473f;
+  --accent: #46b8a3;
+  --accent-ink: #04211c;
+  --accent-soft: #16302b;
+  --warn: #e0a457;
+  --warn-soft: #2e2415;
+  --good: #7dc07f;
+  --good-soft: #1a2a1c;
+  --panel: #0c1614;
+  --panel-ink: #cadbd6;
+  --panel-line: #223330;
+  --panel-accent: #4fc3ae;
+  --shadow: 0 1px 2px rgba(0, 0, 0, .5), 0 10px 30px -14px rgba(0, 0, 0, .8);
+}
+* { box-sizing: border-box; }
+
+/* --------------------------------------------------------------------- */
+/* Base                                                                    */
+/* --------------------------------------------------------------------- */
+
+*, *::before, *::after { box-sizing: border-box; }
+
+html { color-scheme: light dark; }
+
+body {
+  margin: 0;
+  background: var(--ground);
+  color: var(--ink);
+  font-family: var(--body);
+  font-size: 15px;
+  line-height: 1.6;
+  -webkit-font-smoothing: antialiased;
+}
+
+h1, h2, h3, label, th, button, .ui { font-family: var(--ui); }
+h1 { font-size: 1.4rem; font-weight: 600; margin: 0 0 .25rem; letter-spacing: -.01em; }
+h2 { font-size: 1.05rem; font-weight: 600; margin: 0 0 .75rem; }
+p  { margin: 0 0 .75rem; }
+a  { color: var(--accent); }
+
+.mono { font-family: var(--mono); font-variant-numeric: tabular-nums; }
+
+/* --------------------------------------------------------------------- */
+/* Layout                                                                  */
+/* --------------------------------------------------------------------- */
+
+.shell { max-width: 960px; margin: 0 auto; padding: 1.5rem 1.25rem 4rem; }
+.narrow { max-width: 460px; }
+
+.topbar {
+  background: var(--panel);
+  color: var(--panel-ink);
+  border-bottom: 1px solid var(--panel-line);
+}
+.topbar-inner {
+  max-width: 960px; margin: 0 auto; padding: .75rem 1.25rem;
+  display: flex; align-items: center; gap: 1.25rem; flex-wrap: wrap;
+}
+.brand { font-family: var(--ui); font-weight: 600; color: var(--panel-accent); text-decoration: none; }
+.topbar nav { display: flex; gap: 1rem; flex: 1; flex-wrap: wrap; }
+.topbar nav a { color: var(--panel-ink); text-decoration: none; font-family: var(--ui); font-size: .9rem; opacity: .8; }
+.topbar nav a:hover, .topbar nav a[aria-current="page"] { opacity: 1; color: var(--panel-accent); }
+
+.card {
+  background: var(--surface);
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+  box-shadow: var(--shadow);
+  padding: 1.25rem;
+  margin-bottom: 1rem;
+}
+
+.row { display: flex; gap: .5rem; flex-wrap: wrap; align-items: center; }
+.spread { display: flex; justify-content: space-between; align-items: baseline; gap: 1rem; flex-wrap: wrap; }
+.grid { display: grid; gap: 1rem; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); }
+.muted { color: var(--ink-muted); }
+.faint { color: var(--ink-faint); font-size: .85rem; }
+
+/* --------------------------------------------------------------------- */
+/* Forms                                                                   */
+/* --------------------------------------------------------------------- */
+
+.field { margin-bottom: .9rem; }
+.field label { display: block; font-size: .85rem; font-weight: 500; margin-bottom: .3rem; }
+
+input, textarea, select {
+  width: 100%;
+  padding: .55rem .7rem;
+  font: inherit;
+  color: var(--ink);
+  background: var(--surface-sunk);
+  border: 1px solid var(--line-strong);
+  border-radius: var(--radius-sm);
+}
+input:focus, textarea:focus, select:focus {
+  outline: 2px solid var(--accent);
+  outline-offset: 1px;
+  border-color: var(--accent);
+}
+textarea { min-height: 78px; resize: vertical; }
+
+button {
+  font: inherit; font-weight: 500;
+  padding: .5rem .95rem;
+  border-radius: var(--radius-sm);
+  border: 1px solid var(--accent);
+  background: var(--accent);
+  color: var(--accent-ink);
+  cursor: pointer;
+}
+button:hover:not(:disabled) { filter: brightness(1.06); }
+button:disabled { opacity: .55; cursor: not-allowed; }
+button.secondary { background: var(--surface); color: var(--ink); border-color: var(--line-strong); }
+button.danger { background: var(--surface); color: var(--warn); border-color: var(--warn); }
+button.small { padding: .3rem .6rem; font-size: .85rem; }
+
+.error {
+  background: var(--warn-soft); color: var(--warn);
+  border: 1px solid currentColor; border-radius: var(--radius-sm);
+  padding: .5rem .7rem; margin-bottom: .9rem; font-size: .9rem;
+}
+.field-error { color: var(--warn); font-size: .8rem; margin-top: .25rem; }
+
+/* --------------------------------------------------------------------- */
+/* Data                                                                    */
+/* --------------------------------------------------------------------- */
+
+.stat { background: var(--surface-sunk); border: 1px solid var(--line); border-radius: var(--radius-sm); padding: .8rem .9rem; }
+.stat .value { font-family: var(--mono); font-size: 1.5rem; font-weight: 500; font-variant-numeric: tabular-nums; }
+.stat .label { font-size: .8rem; color: var(--ink-muted); }
+
+/* Wide content scrolls inside its own container; the page never scrolls sideways. */
+.table-scroll { overflow-x: auto; }
+
+table { width: 100%; border-collapse: collapse; }
+th, td { text-align: left; padding: .55rem .5rem; border-bottom: 1px solid var(--line); vertical-align: middle; }
+th { font-size: .8rem; color: var(--ink-muted); font-weight: 500; white-space: nowrap; }
+td.num, th.num { text-align: right; font-family: var(--mono); font-variant-numeric: tabular-nums; white-space: nowrap; }
+
+/* IBM Plex Mono has no ฿, so the glyph falls back to a Thai face whose metrics
+   do not match the tabular figures and collides with the first digit. Setting
+   it in the UI face and giving it its own spacing keeps the numbers aligned. */
+.baht { font-family: var(--ui); margin-right: .2em; }
+
+.tag {
+  display: inline-block; font-family: var(--ui); font-size: .75rem; white-space: nowrap;
+  padding: .12rem .5rem; border-radius: 999px; border: 1px solid transparent;
+}
+.tag.published { background: var(--good-soft); color: var(--good); }
+.tag.draft     { background: var(--surface-sunk); color: var(--ink-muted); border-color: var(--line-strong); }
+.tag.unpublished { background: var(--warn-soft); color: var(--warn); }
+
+.empty { text-align: center; padding: 2rem 1rem; color: var(--ink-muted); }
+
+/* --------------------------------------------------------------------- */
+/* Product photos                                                          */
+/* --------------------------------------------------------------------- */
+
+.photo-strip { display: flex; gap: .5rem; flex-wrap: wrap; }
+
+.photo-thumb {
+  position: relative;
+  width: 88px;
+  border: 1px solid var(--line-strong);
+  border-radius: var(--radius-sm);
+  overflow: hidden;
+  background: var(--surface);
+}
+.photo-thumb img {
+  display: block;
+  width: 100%;
+  height: 88px;
+  object-fit: cover;
+}
+.photo-thumb button {
+  width: 100%;
+  border-radius: 0;
+  border-width: 1px 0 0;
+}

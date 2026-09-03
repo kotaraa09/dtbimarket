@@ -1,0 +1,18 @@
+node_modules/
+dist/
+.next/
+*.tsbuildinfo
+
+# Secrets — REQ-N3, CLAUDE.md rule 9. Never commit a real .env.
+# Ignore every .env variant, then allow back only the committed templates,
+# which contain no values. A denylist of specific names misses the next one
+# somebody creates — and .env.test already held a real SESSION_SECRET.
+.env
+.env.*
+!.env.example
+!.env.test.example
+
+# Local uploads. Product photos go to object storage in deployment (D-3);
+# this directory only exists so PB-10 has somewhere to write during development.
+apps/api/.uploads/
+packages/db/src/generated/

@@ -1,0 +1,319 @@
+// Database schema for dtbimarket.
+//
+// The authority for this file is docs/02-design/database-schema.md. Conventions
+// from that document that are load-bearing here:
+//   - cuid() text primary keys, safe to expose in a URL
+//   - money is integer satang, never float
+//   - snake_case in the database, camelCase in the Prisma client
+//   - explicit status enums, not accumulating booleans
+//   - is_seed on EVERY table, default false (CLAUDE.md rule 6)
+//
+// The research tables — Experiment, Variant, Assignment, Recommendation — are
+// PB-19 and PB-21 (milestone M3) and are deliberately NOT in this file yet.
+// Adding them early would mean guessing at shapes that CLAUDE.md puts on the
+// ask-before-doing list. They arrive with the experiment that needs them.
+
+generator client {
+  // The `prisma-client` generator, not the older `prisma-client-js`. It emits
+  // ESM to a path we choose, which is what this workspace needs: the legacy
+  // generator writes into node_modules/.prisma/client, a location that does not
+  // resolve under pnpm's isolated node_modules layout, and that Prisma 7
+  // removes regardless. Generated code is not committed — see .gitignore.
+  provider        = "prisma-client"
+  output          = "../src/generated/client"
+  runtime         = "nodejs"
+  moduleFormat    = "esm"
+  generatedFileExtension = "ts"
+  importFileExtension    = "ts"
+  previewFeatures = ["postgresqlExtensions"]
+}
+
+datasource db {
+  provider   = "postgresql"
+  url        = env("DATABASE_URL")
+  extensions = [citext]
+}
+
+// ---------------------------------------------------------------------------
+// Enumerations
+// ---------------------------------------------------------------------------
+
+enum UserRole {
+  seller
+  buyer
+  admin
+
+  @@map("user_role")
+}
+
+enum StoreStatus {
+  active
+  paused
+
+  @@map("store_status")
+}
+
+enum StoreCategory {
+  food
+  drinks
+  dessert
+  fashion
+  handmade
+  beauty
+  stationery
+  service
+  other
+
+  @@map("store_category")
+}
+
+enum ProductStatus {
+  draft
+  published
+  unpublished
+
+  @@map("product_status")
+}
+
+// Placeholder from database-schema.md. Q-5 is unresolved and PB-16 is blocked
+// on it; no order-status code exists yet.
+enum OrderStatus {
+  placed
+  accepted
+  ready
+  completed
+  cancelled
+
+  @@map("order_status")
+}
+
+enum ActorType {
+  seller
+  buyer
+  system
+
+  @@map("actor_type")
+}
+
+// ---------------------------------------------------------------------------
+// Commerce
+// ---------------------------------------------------------------------------
+
+model User {
+  id String @id @default(cuid())
+
+  /// Personal data. Never in an event payload or a log line — REQ-N2.
+  email String @unique @db.Citext
+
+  /// Argon2id. Never logged, never returned by any endpoint.
+  passwordHash String @map("password_hash")
+
+  /// A seller may also buy; role gates the dashboard, not the storefront.
+  role UserRole
+
+  /// Personal data.
+  displayName String @map("display_name")
+
+  createdAt DateTime @default(now()) @map("created_at") @db.Timestamptz(3)
+  isSeed    Boolean  @default(false) @map("is_seed")
+
+  store    Store?
+  sessions Session[]
+  orders   Order[]
+
+  @@map("user")
+}
+
+/// Server-side session (ADR-0003). The row is the session, so signing a seller
+/// out is a write here rather than a hope that a token expires.
+model Session {
+  id     String @id @default(cuid())
+  userId String @map("user_id")
+
+  createdAt DateTime  @default(now()) @map("created_at") @db.Timestamptz(3)
+  expiresAt DateTime  @map("expires_at") @db.Timestamptz(3)
+  revokedAt DateTime? @map("revoked_at") @db.Timestamptz(3)
+
+  isSeed Boolean @default(false) @map("is_seed")
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+  @@index([expiresAt])
+  @@map("session")
+}
+
+model Store {
+  id String @id @default(cuid())
+
+  /// One store per seller — enforced by the database, not by the UI.
+  ownerId String @unique @map("owner_id")
+
+  name        String
+  slug        String  @unique
+  description String?
+
+  /// Also the peer group for any comparison framing in a later experiment.
+  category StoreCategory
+
+  /// Personal data. Shown to buyers, never in events.
+  contactChannel String? @map("contact_channel")
+
+  /// A seller on exam week can pause without deleting.
+  status StoreStatus @default(active)
+
+  createdAt DateTime @default(now()) @map("created_at") @db.Timestamptz(3)
+  updatedAt DateTime @updatedAt @map("updated_at") @db.Timestamptz(3)
+  isSeed    Boolean  @default(false) @map("is_seed")
+
+  owner    User      @relation(fields: [ownerId], references: [id], onDelete: Cascade)
+  products Product[]
+  orders   Order[]
+
+  @@map("store")
+}
+
+model Product {
+  id      String @id @default(cuid())
+  storeId String @map("store_id")
+
+  name        String
+  description String?
+
+  priceSatang Int @map("price_satang")
+  stock       Int @default(0)
+
+  /// Only `published` appears in the catalogue or counts toward photo coverage.
+  status ProductStatus @default(draft)
+
+  createdAt DateTime @default(now()) @map("created_at") @db.Timestamptz(3)
+  updatedAt DateTime @updatedAt @map("updated_at") @db.Timestamptz(3)
+  isSeed    Boolean  @default(false) @map("is_seed")
+
+  store  Store          @relation(fields: [storeId], references: [id], onDelete: Cascade)
+  photos ProductPhoto[]
+  items  OrderItem[]
+
+  /// Every dashboard metric and every advisor trigger filters on exactly this pair.
+  @@index([storeId, status])
+  @@map("product")
+}
+
+/// Source of the photo-coverage metric: the trigger for the first
+/// recommendation and the target of the primary metric.
+model ProductPhoto {
+  id        String @id @default(cuid())
+  productId String @map("product_id")
+
+  /// Object storage key, not a public URL — the URL is built at read time so
+  /// the bucket can move without rewriting rows.
+  storageKey String @map("storage_key")
+  position   Int
+
+  createdAt DateTime @default(now()) @map("created_at") @db.Timestamptz(3)
+  isSeed    Boolean  @default(false) @map("is_seed")
+
+  product Product @relation(fields: [productId], references: [id], onDelete: Cascade)
+
+  @@index([productId])
+  @@map("product_photo")
+}
+
+model Order {
+  id      String @id @default(cuid())
+  storeId String @map("store_id")
+
+  /// Nullable only if Q-3 resolves to guest checkout. It has not, so this stays
+  /// required and buyer-side events keep their actor.
+  buyerId String @map("buyer_id")
+
+  status      OrderStatus @default(placed)
+  totalSatang Int         @map("total_satang")
+  placedAt    DateTime    @default(now()) @map("placed_at") @db.Timestamptz(3)
+
+  isSeed Boolean @default(false) @map("is_seed")
+
+  store Store       @relation(fields: [storeId], references: [id], onDelete: Cascade)
+  buyer User        @relation(fields: [buyerId], references: [id])
+  items OrderItem[]
+
+  @@index([storeId])
+  @@index([buyerId])
+  @@map("order")
+}
+
+model OrderItem {
+  id        String @id @default(cuid())
+  orderId   String @map("order_id")
+  productId String @map("product_id")
+
+  quantity Int
+
+  /// Price at the time of ordering, copied, not joined. A seller changing a
+  /// price next week must not silently rewrite what last week's buyer agreed to.
+  unitPriceSatang Int @map("unit_price_satang")
+
+  /// The name the buyer actually saw.
+  nameSnapshot String @map("name_snapshot")
+
+  isSeed Boolean @default(false) @map("is_seed")
+
+  order Order @relation(fields: [orderId], references: [id], onDelete: Cascade)
+
+  /// Restrict, not cascade — deleting a product must not erase order history.
+  product Product @relation(fields: [productId], references: [id], onDelete: Restrict)
+
+  @@index([orderId])
+  @@index([productId])
+  @@map("order_item")
+}
+
+// ---------------------------------------------------------------------------
+// Telemetry — APPEND ONLY
+// ---------------------------------------------------------------------------
+
+/// An event is a historical fact.
+///
+/// This table is append-only: never UPDATE, never DELETE, never migrate old
+/// rows to a new shape (CLAUDE.md rule 2, ADR-0001). Enforcement is in three
+/// places — the application refuses, the database role has no UPDATE or DELETE
+/// grant, and code review looks for it.
+///
+/// NO FOREIGN KEYS, BY DESIGN. If a product is deleted, the event that a photo
+/// was added to it on 3 October remains true, and a cascade would erase it.
+/// `entityId` and `storeId` are references, not constraints.
+///
+/// `type` is text rather than a Postgres enum. Event types are added
+/// continuously, and an enum needs a migration for each addition, which invites
+/// batching them up and shipping a feature without its event. The valid set is
+/// the union in packages/shared and is validated at the emit site.
+model Event {
+  id String @id @default(cuid())
+
+  type String
+
+  actorType ActorType @map("actor_type")
+
+  /// null for system events.
+  actorId String? @map("actor_id")
+
+  /// The join key for the entire study.
+  storeId String? @map("store_id")
+
+  entityType String? @map("entity_type")
+  entityId   String? @map("entity_id")
+
+  /// IDs and values only. No names, phone numbers, addresses or email.
+  payload Json @default("{}")
+
+  occurredAt DateTime @map("occurred_at") @db.Timestamptz(3)
+  isSeed     Boolean  @default(false) @map("is_seed")
+
+  /// The action-rate join.
+  @@index([storeId, type, occurredAt])
+  /// Exports.
+  @@index([occurredAt])
+  /// Counts.
+  @@index([type])
+  @@map("event")
+}

@@ -142,6 +142,8 @@ Four details are deliberate.
 
 ## Copy rendering and the grounding guard
 
+Templates, not a language model — decided 2026-08-28, `decisions/0002-templated-advisor-copy.md`.
+
 ```python
 PLACEHOLDER = re.compile(r"\{(\w+)\}")
 

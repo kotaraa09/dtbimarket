@@ -2,7 +2,15 @@
 
 Ordered list of work, derived from `requirements.md`. `feature-list.md` is the *what*; this is the *when and in which order*.
 
-Status: **first pass, 2026-08-28.** Nothing in this repository is built yet — the repository currently contains documentation only, so every item below is `todo`.
+Status: **updated 2026-09-03.**
+
+**Done:** PB-01, PB-02, PB-03, PB-05 (M0 foundation), PB-06, PB-07, PB-08, PB-09, PB-10, PB-11 (all of the M1 seller catalogue).
+
+**M0 is not complete.** Its exit condition is "a user action *in production* writes an `Event` row that analysis can read". Events are written and read locally, but PB-04 (deploy) is blocked on D-1, so the milestone stays open.
+
+**M1 is feature-complete.** PB-10 landed with ADR-0004, so `product.photo_added` — the event the thesis's primary metric is joined on — is now produced by a real upload path. M1's exit condition is a *real seller* onboarding without help, which is an operational step, not a coding one.
+
+**The next blocker is D-1**, hosting and managed database. It gates PB-04 and therefore M0's exit condition, and it carries the storage provider with it. Q-2 also stays open by the owner's choice, so PB-27 / FEAT-H2 is still the one blocked coursework row.
 
 ## How this backlog is ordered
 

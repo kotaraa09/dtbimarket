@@ -1,0 +1,14 @@
+packages:
+  - 'apps/*'
+  - 'packages/*'
+
+# Postinstall scripts are opt-in per package. These three fetch and place the
+# Prisma query engine binary; without them `prisma generate` has no engine.
+allowBuilds:
+  '@prisma/client': true
+  '@prisma/engines': true
+  prisma: true
+  '@node-rs/argon2': true
+  sharp: true
+  unrs-resolver: true
+  esbuild: true
