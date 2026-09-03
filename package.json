@@ -1,0 +1,32 @@
+{
+  "name": "dtbimarket",
+  "private": true,
+  "version": "0.0.0",
+  "packageManager": "pnpm@11.25.0",
+  "engines": {
+    "node": ">=22"
+  },
+  "scripts": {
+    "dev": "pnpm --parallel --filter ./apps/** dev",
+    "build": "pnpm -r build",
+    "db:migrate": "prisma migrate dev",
+    "db:seed": "prisma db seed",
+    "db:reset": "prisma migrate reset",
+    "db:up": "docker compose up -d db",
+    "db:down": "docker compose down",
+    "test": "pnpm -r test",
+    "lint": "eslint .",
+    "typecheck": "pnpm -r typecheck",
+    "db:generate": "prisma generate",
+    "db:deploy": "prisma migrate deploy",
+    "db:studio": "prisma studio",
+    "test:db:setup": "docker exec -i dtbimarket-db psql -U dtbi -d postgres -c \"CREATE DATABASE dtbimarket_test OWNER dtbi;\" || true"
+  },
+  "devDependencies": {
+    "@eslint/js": "^9.39.1",
+    "eslint": "^9.39.1",
+    "typescript": "^5.9.3",
+    "typescript-eslint": "^8.46.4",
+    "prisma": "^6.19.1"
+  }
+}

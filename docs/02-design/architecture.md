@@ -121,11 +121,11 @@ Target shape: `apps/web` on a platform with first-class Next.js support, `apps/a
 
 **Provider is not chosen here.** Candidates and cost are an owner decision, and it is on the ask-before-doing list. It needs an ADR before anything is provisioned, and it should be settled before M0 completes since `PB-04` is a milestone exit condition.
 
-Note one constraint that removes some candidates: **the file system of the API container is not durable.** Product photos must go to object storage from the first version, or every deploy silently deletes the seller's photos — which would also destroy the primary metric, since photo count is what the first recommendation is about.
+Note one constraint that removes some candidates: **the file system of the API container is not durable.** Product photos must go to object storage from the first version, or every deploy silently deletes the seller's photos — which would also destroy the primary metric, since photo count is what the first recommendation is about. This is settled in ADR-0004: photos go to an S3-compatible bucket, and the API refuses to start in production with any other driver.
 
 ## Cross-cutting concerns
 
-**Authentication.** Proposed: server-side session with an httpOnly, Secure, SameSite=Lax cookie. Rejected alternative: a JWT held in `localStorage`, which is readable by any injected script and cannot be revoked. Session revocation matters here because a seller who leaves the study must be able to be signed out. Needs an ADR before implementation.
+**Authentication.** Decided (ADR-0003): server-side session with an httpOnly, Secure, SameSite=Lax cookie. Rejected alternative: a JWT held in `localStorage`, which is readable by any injected script and cannot be revoked. Session revocation matters here because a seller who leaves the study must be able to be signed out — and that requirement, more than the script-access one, is what decided it.
 
 **Authorisation.** One rule, applied in the API: a request touching store-owned data must resolve to a store owned by the caller. It lives in one middleware so it cannot be forgotten per route, and TS-01-15 tests it.
 
@@ -144,12 +144,14 @@ Note one constraint that removes some candidates: **the file system of the API c
 | # | Decision | Blocks | Notes |
 |---|---|---|---|
 | D-1 | Hosting provider and database provider | PB-04, M0 | ADR required. Must include daily backup and a tested restore |
-| D-2 | Session cookie versus token auth | PB-06 | Proposal above; ADR required |
-| D-3 | Object storage for photos, and whether it also answers Q-2 (external API) | PB-10, PB-27 | Photos cannot ship without it |
-| D-4 | Does the advisor generate copy from templates, or from a language model? | PB-24, EXP-001 | See below. This one has research consequences |
+| ~~D-2~~ | ~~Session cookie versus token auth~~ | — | **Decided 2026-09-03: server-side session.** `decisions/0003-server-side-session-cookie.md` |
+| ~~D-3~~ | ~~Object storage for photos~~ | — | **Decided 2026-09-03: S3-compatible, provider deferred to D-1.** `decisions/0004-s3-compatible-object-storage.md`. It does **not** answer Q-2 — that stays open |
+| ~~D-4~~ | ~~Templates or a language model for advisor copy~~ | — | **Decided 2026-08-28: templates.** `decisions/0002-templated-advisor-copy.md` |
 
-### On D-4, because it is not only a technical choice
+### On D-4, now settled
 
-For an experiment about **framing**, the text of each variant must be identical for every seller who receives it. If a language model paraphrases the recommendation per seller, the thing that varies between two sellers in the same arm is no longer only the framing — and nothing in the results will reveal that, because the numbers will still come out clean.
+Advisor copy comes from **deterministic templates filled from `metric_snapshot`** — one template per variant, rendered server-side, text recorded verbatim in the experiment document. No language model in the generation path while an experiment is running.
 
-The design assumed by these documents is therefore: **deterministic templates, filled from `metric_snapshot`, one template per variant, text recorded verbatim in the experiment document.** A language model may still have a role outside the experiment, or after it stops. That is the owner's call to make explicitly, not something to inherit from an architecture diagram.
+The reasoning is in ADR-0002. The short version: an experiment about framing has to hold everything except framing constant, including between two sellers in the same arm, and a model that paraphrases per seller breaks that without leaving a trace in the results.
+
+One knock-on for the coursework: **the advisor is no longer a candidate answer to Q-2**, the external API requirement. Object storage for product photos (D-3) is needed regardless and is now the strongest candidate.
