@@ -1,0 +1,324 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>dtbimarket — Design Documentation Overview</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500&family=IBM+Plex+Sans:wght@400;500;600&display=swap">
+<style>
+  @page { size: A4 landscape; margin: 0; }
+  :root {
+    --ink: #0f1f1c; --ink-2: #465954; --ink-3: #7d908b;
+    --line: #d5e0dc; --line-2: #b9c9c4;
+    --surface: #fff; --ground: #f2f6f5;
+    --accent: #0e6e63; --accent-soft: #dcefeb;
+    --warn: #a35a00; --warn-soft: #fbeeda;
+    --panel: #12211f;
+    --ui: "IBM Plex Sans", "Segoe UI", system-ui, sans-serif;
+    --mono: "IBM Plex Mono", Consolas, monospace;
+  }
+  * { box-sizing: border-box; }
+  html, body { margin: 0; padding: 0; background: #d9dede; }
+  body { font-family: var(--ui); color: var(--ink); font-size: 12.5px; line-height: 1.5;
+         -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+  .page { width: 1123px; height: 794px; background: var(--surface); padding: 26px 30px 24px;
+          position: relative; overflow: hidden; margin: 0 auto 18px; display: flex; flex-direction: column; }
+  .page:last-child { margin-bottom: 0; }
+  @media print { .page { margin: 0; page-break-after: always; } .page:last-child { page-break-after: auto; } }
+
+  .phead { display: flex; align-items: baseline; gap: 12px; border-bottom: 2px solid var(--ink);
+           padding-bottom: 7px; margin-bottom: 16px; flex: none; }
+  .phead .brand { font-weight: 600; font-size: 14px; }
+  .phead .ttl { font-size: 14px; color: var(--accent); font-weight: 600; }
+  .phead .sub { font-size: 10.5px; color: var(--ink-3); margin-left: auto; font-family: var(--mono); }
+  .pnum { position: absolute; right: 30px; bottom: 13px; font-family: var(--mono); font-size: 10px; color: var(--ink-3); }
+
+  h2 { font-size: 11.5px; margin: 0 0 8px; text-transform: uppercase; letter-spacing: .09em; color: var(--accent); font-weight: 600; }
+  p { margin: 0 0 6px; }
+  .muted { color: var(--ink-2); }
+  .tiny { font-size: 11px; }
+  .mono { font-family: var(--mono); }
+  b { font-weight: 600; }
+
+  .grid { display: grid; gap: 15px; flex: 1; min-height: 0; }
+  .panel { border: 1px solid var(--line); border-radius: 6px; padding: 14px 16px; overflow: hidden;
+           display: flex; flex-direction: column; }
+  .panel > .spacer { margin-top: auto; }
+  .panel.fill { background: var(--ground); }
+  .panel.dark { background: var(--panel); color: #d7e5e1; border-color: var(--panel); }
+  .panel.dark h2 { color: #5cc4b0; }
+
+  table { border-collapse: collapse; width: 100%; font-size: 12px; }
+  td, th { text-align: left; padding: 5.5px 8px 5.5px 0; vertical-align: top; border-bottom: 1px solid var(--line); }
+  th { font-size: 9px; text-transform: uppercase; letter-spacing: .06em; color: var(--ink-3); font-weight: 600; }
+  tr:last-child td { border-bottom: none; }
+  td.id { font-family: var(--mono); font-size: 10.5px; white-space: nowrap; width: 1%; padding-right: 10px; color: var(--ink-2); }
+  td.ev { font-family: var(--mono); font-size: 10.5px; color: var(--accent); white-space: nowrap; }
+
+  .pill { display: inline-block; font-family: var(--mono); font-size: 9.5px; padding: 2px 7px; border-radius: 99px;
+          background: var(--accent-soft); color: var(--accent); white-space: nowrap; }
+  .pill.warn { background: var(--warn-soft); color: var(--warn); }
+  .pill.solid { background: var(--accent); color: #fff; }
+
+  .kpi { display: flex; gap: 11px; flex: none; margin-bottom: 15px; }
+  .kpi div { flex: 1; border: 1px solid var(--line); border-radius: 6px; padding: 11px 13px; }
+  .kpi .n { font-size: 27px; font-weight: 600; letter-spacing: -.02em; line-height: 1.1; }
+  .kpi .l { font-size: 9.5px; color: var(--ink-3); text-transform: uppercase; letter-spacing: .05em; }
+
+  ul.tick { margin: 0; padding: 0; list-style: none; }
+  ul.tick li { position: relative; padding-left: 14px; margin-bottom: 6px; }
+  ul.tick li::before { content: ""; position: absolute; left: 0; top: 6px; width: 5px; height: 5px; border-radius: 50%; background: var(--accent); }
+
+  .rulebox { border-left: 3px solid var(--warn); background: var(--warn-soft); padding: 9px 12px; border-radius: 0 5px 5px 0; }
+
+  .chain { display: flex; }
+  .step { flex: 1; padding: 0 7px; position: relative; }
+  .step:not(:last-child)::after { content: ""; position: absolute; right: -4px; top: 9px; width: 8px; height: 2px; background: var(--line-2); }
+  .step .dot { width: 18px; height: 18px; border-radius: 50%; background: var(--accent); color: #fff;
+               font-size: 10px; font-weight: 600; display: grid; place-items: center; margin-bottom: 6px; }
+  .step .dot.sys { background: var(--ink-3); }
+  .step h4 { font-size: 10.5px; margin: 0 0 4px; font-weight: 600; line-height: 1.3; }
+  .step .ev { font-family: var(--mono); font-size: 8.5px; color: var(--accent); line-height: 1.4; overflow-wrap: anywhere; }
+  .step .ev.none { color: var(--ink-3); }
+
+  .shot { width: 100%; border: 1px solid var(--line); border-radius: 5px; display: block; }
+</style>
+</head>
+<body>
+
+<!-- ===================== PAGE 1 ===================== -->
+<section class="page">
+  <div class="phead">
+    <span class="brand">dtbimarket</span>
+    <span class="ttl">Design Documentation — Overview</span>
+    <span class="sub">Student 6910137 · Mae Fah Luang University · 2026-08-28</span>
+  </div>
+
+  <div class="panel fill" style="flex:none; margin-bottom:15px">
+    <p style="font-size:13.5px; margin:0 0 9px"><b>A shared e-commerce platform for student-run micro-businesses at MFU, with an AI advisor that turns the platform's own data into recommendations for sellers.</b></p>
+    <div style="display:grid; grid-template-columns:repeat(3,1fr); gap:20px">
+      <div><span class="pill solid">1 · Research</span><div style="margin-top:5px">Does recommendation framing change the 7-day action rate?</div></div>
+      <div><span class="pill">2 · Coursework</span><div style="margin-top:5px">Auth, CRUD, dashboard, cloud, external API</div></div>
+      <div><span class="pill">3 · Product</span><div style="margin-top:5px">Real sellers, one semester</div></div>
+    </div>
+  </div>
+
+  <div class="kpi">
+    <div><div class="n">26</div><div class="l">Features</div></div>
+    <div><div class="n">36</div><div class="l">Backlog items</div></div>
+    <div><div class="n">47</div><div class="l">NFRs</div></div>
+    <div><div class="n">19</div><div class="l">Test cases</div></div>
+    <div><div class="n">2</div><div class="l">ADRs accepted</div></div>
+    <div><div class="n">3</div><div class="l">Decisions open</div></div>
+  </div>
+
+  <div class="grid" style="grid-template-columns: 1.25fr 1fr;">
+    <div class="panel">
+      <h2>Feature list — 8 groups</h2>
+      <table>
+        <tr><td class="id">A</td><td>Accounts &amp; access</td><td><span class="pill">auth</span></td></tr>
+        <tr><td class="id">B</td><td>Store &amp; catalogue — products, <b>photos</b>, price, stock</td><td><span class="pill">CRUD</span></td></tr>
+        <tr><td class="id">C</td><td>Buyer &amp; orders</td><td></td></tr>
+        <tr><td class="id">D</td><td>Seller dashboard</td><td><span class="pill">dashboard</span></td></tr>
+        <tr><td class="id">E</td><td>AI advisor — grounded recommendations</td><td></td></tr>
+        <tr><td class="id">F</td><td>Telemetry &amp; experiment infrastructure</td><td></td></tr>
+        <tr><td class="id">G</td><td>Analysis</td><td></td></tr>
+        <tr><td class="id">H</td><td>Platform — deployment, external API</td><td><span class="pill">cloud</span> <span class="pill warn">API open</span></td></tr>
+      </table>
+      <div class="rulebox spacer" style="margin-top:auto">
+        <b>Every user action writes an event.</b> No event, no data — and none of it can be backfilled.
+      </div>
+    </div>
+
+    <div class="panel">
+      <h2>Document set</h2>
+      <table>
+        <tr><td class="id">01</td><td>requirements · non-functional-requirements · product-backlog · feature-list</td></tr>
+        <tr><td class="id">02</td><td>architecture · database-schema · api-spec · detailed-design</td></tr>
+        <tr><td class="id">02</td><td>UJ-01 journey · PR-01 wireframe + prototype · ADR-0001 · ADR-0002</td></tr>
+        <tr><td class="id">03</td><td>hypotheses · analysis-plan <span class="tiny muted">(thesis)</span></td></tr>
+        <tr><td class="id">04</td><td>TS-01 test spec</td></tr>
+      </table>
+      <h2 class="spacer" style="margin-top:auto; padding-top:14px">Traceability</h2>
+      <p class="mono tiny" style="margin:0 0 7px">REQ-B3 → PB-10 → FEAT-B4 → <span style="color:var(--accent)">product.photo_added</span> → TS-01-07</p>
+      <p class="tiny muted" style="margin:0">One chain per feature. The same event is the advisor's <span class="mono">action_type</span> target and step 9 of the journey.</p>
+    </div>
+  </div>
+
+  <span class="pnum">1 / 3</span>
+</section>
+
+<!-- ===================== PAGE 2 ===================== -->
+<section class="page">
+  <div class="phead">
+    <span class="brand">dtbimarket</span>
+    <span class="ttl">Architecture &amp; Data Model</span>
+    <span class="sub">architecture.md · database-schema.md</span>
+  </div>
+
+  <div class="panel" style="flex:none; margin-bottom:15px">
+    <h2>Every user action passes through one API</h2>
+    <svg viewBox="0 0 1040 168" width="100%" height="176" role="img" aria-label="Component diagram">
+      <defs>
+        <marker id="ar" viewBox="0 0 8 8" refX="7" refY="4" markerWidth="7" markerHeight="7" orient="auto">
+          <path d="M0 0 L8 4 L0 8 z" fill="#7d908b"/>
+        </marker>
+      </defs>
+      <g font-family="IBM Plex Sans, Segoe UI, sans-serif" font-size="11">
+        <rect x="4" y="16" width="108" height="32" rx="5" fill="#f2f6f5" stroke="#b9c9c4"/>
+        <text x="58" y="36" text-anchor="middle" font-weight="600">Seller</text>
+        <rect x="4" y="66" width="108" height="32" rx="5" fill="#f2f6f5" stroke="#b9c9c4"/>
+        <text x="58" y="86" text-anchor="middle" font-weight="600">Buyer</text>
+        <rect x="4" y="118" width="108" height="32" rx="5" fill="#f2f6f5" stroke="#b9c9c4"/>
+        <text x="58" y="138" text-anchor="middle" font-weight="600">Researcher</text>
+
+        <rect x="164" y="40" width="150" height="56" rx="6" fill="#fff" stroke="#0f1f1c" stroke-width="1.4"/>
+        <text x="239" y="62" text-anchor="middle" font-weight="600">apps/web</text>
+        <text x="239" y="78" text-anchor="middle" font-size="10" fill="#465954">Next.js</text>
+
+        <rect x="366" y="26" width="176" height="84" rx="6" fill="#dcefeb" stroke="#0e6e63" stroke-width="1.6"/>
+        <text x="454" y="48" text-anchor="middle" font-weight="600" fill="#0e6e63">apps/api</text>
+        <text x="454" y="65" text-anchor="middle" font-size="10">Express · auth · CRUD</text>
+        <text x="454" y="80" text-anchor="middle" font-size="10">metrics · events</text>
+        <text x="454" y="95" text-anchor="middle" font-size="10">variant assignment</text>
+
+        <rect x="594" y="16" width="152" height="52" rx="6" fill="#fff" stroke="#0f1f1c" stroke-width="1.4"/>
+        <text x="670" y="37" text-anchor="middle" font-weight="600">services/advisor</text>
+        <text x="670" y="53" text-anchor="middle" font-size="10" fill="#465954">Python · templates</text>
+
+        <rect x="594" y="112" width="152" height="42" rx="6" fill="#fff" stroke="#b9c9c4" stroke-dasharray="4 3"/>
+        <text x="670" y="130" text-anchor="middle" font-weight="600">Object storage</text>
+        <text x="670" y="145" text-anchor="middle" font-size="9.5" fill="#a35a00">photos — D-3 open</text>
+
+        <rect x="812" y="38" width="150" height="64" rx="6" fill="#12211f"/>
+        <text x="887" y="62" text-anchor="middle" font-weight="600" fill="#fff">PostgreSQL</text>
+        <text x="887" y="79" text-anchor="middle" font-size="9.5" fill="#9fb3ae">commerce · telemetry</text>
+        <text x="887" y="92" text-anchor="middle" font-size="9.5" fill="#9fb3ae">· research</text>
+
+        <rect x="164" y="118" width="150" height="32" rx="6" fill="#fff" stroke="#0f1f1c" stroke-width="1.4"/>
+        <text x="239" y="138" text-anchor="middle" font-weight="600">analysis/</text>
+
+        <g stroke="#7d908b" stroke-width="1.3" fill="none" marker-end="url(#ar)">
+          <path d="M112 32 L159 55"/>
+          <path d="M112 82 L159 80"/>
+          <path d="M112 134 L159 134"/>
+          <path d="M314 68 L361 68"/>
+          <path d="M542 52 L589 44"/>
+          <path d="M542 94 L589 128"/>
+          <path d="M542 68 L807 68"/>
+          <path d="M314 132 L807 100"/>
+        </g>
+        <path d="M594 42 L547 34" stroke="#7d908b" stroke-width="1.3" fill="none" marker-end="url(#ar)"/>
+      </g>
+    </svg>
+  </div>
+
+  <div class="grid" style="grid-template-columns: 1fr 1fr;">
+    <div class="panel">
+      <h2>Three placement rules</h2>
+      <ul class="tick">
+        <li><b>Events</b> are written by the API, inside the action's transaction. Never by the browser.</li>
+        <li><b>Assignment</b> happens on the server, once, persisted. Unique per unit.</li>
+        <li><b>Metrics</b> live in one module, read by both the dashboard and the advisor.</li>
+      </ul>
+      <h2 style="margin-top:16px">Stack</h2>
+      <table>
+        <tr><td class="id">web</td><td>Next.js, TypeScript</td></tr>
+        <tr><td class="id">api</td><td>Express, TypeScript</td></tr>
+        <tr><td class="id">db</td><td>PostgreSQL via Prisma</td></tr>
+        <tr><td class="id">advisor</td><td>Python — templates, no LLM (ADR-0002)</td></tr>
+        <tr><td class="id">analysis</td><td>Python</td></tr>
+        <tr><td class="id">deploy</td><td>Cloud, managed Postgres — provider open (D-1)</td></tr>
+      </table>
+      <p class="mono spacer" style="font-size:11px; margin:0; padding-top:14px; color:var(--ink-2)">action + event → one transaction → commit</p>
+    </div>
+
+    <div class="panel">
+      <h2>Data model — three zones</h2>
+      <table>
+        <tr><th>Zone</th><th>Tables</th><th>Policy</th></tr>
+        <tr><td>Commerce</td><td class="mono tiny">User · Store · Product · ProductPhoto · Order · OrderItem</td><td class="tiny">reshape freely</td></tr>
+        <tr><td>Telemetry</td><td class="mono tiny">Event</td><td><span class="pill warn">append-only</span></td></tr>
+        <tr><td>Research</td><td class="mono tiny">Experiment · Variant · Assignment · Recommendation</td><td><span class="pill warn">ask first</span></td></tr>
+      </table>
+      <h2 style="margin-top:16px">Conventions</h2>
+      <ul class="tick">
+        <li><b>Event has no foreign keys</b> — a deleted product must not erase the measurement</li>
+        <li><b>Money in integer satang</b> — float totals stop adding up</li>
+        <li><b>is_seed on every table</b> — demo rows excluded everywhere</li>
+        <li><b>OrderItem stores price and name</b> — later edits never rewrite history</li>
+      </ul>
+      <p class="mono spacer" style="font-size:11px; margin:0; padding-top:14px; color:var(--ink-2)">acted = event(store, action_type) &lt;= delivered_at + 7 days</p>
+    </div>
+  </div>
+
+  <span class="pnum">2 / 3</span>
+</section>
+
+<!-- ===================== PAGE 3 ===================== -->
+<section class="page">
+  <div class="phead">
+    <span class="brand">dtbimarket</span>
+    <span class="ttl">UJ-01 Recommendation to Action — Design, Screen, Tests</span>
+    <span class="sub">UJ-01 · PR-01 · TS-01</span>
+  </div>
+
+  <div class="panel" style="flex:none; margin-bottom:15px">
+    <h2>The journey the thesis measures — and the event at each step</h2>
+    <div class="chain">
+      <div class="step"><div class="dot">1</div><h4>Signs in</h4><div class="ev">seller.signed_in</div></div>
+      <div class="step"><div class="dot">2</div><h4>Opens dashboard</h4><div class="ev">dashboard.viewed</div></div>
+      <div class="step"><div class="dot sys">3</div><h4>Advisor reads metrics</h4><div class="ev none">read only</div></div>
+      <div class="step"><div class="dot sys">4</div><h4>Variant assigned</h4><div class="ev none">Assignment row</div></div>
+      <div class="step"><div class="dot sys">5</div><h4>Delivered</h4><div class="ev">recommendation.delivered</div></div>
+      <div class="step"><div class="dot">6</div><h4>Seen</h4><div class="ev">recommendation.viewed</div></div>
+      <div class="step"><div class="dot">7</div><h4>Opened</h4><div class="ev">recommendation.opened</div></div>
+      <div class="step"><div class="dot">8</div><h4>Goes to product</h4><div class="ev none">—</div></div>
+      <div class="step"><div class="dot">9</div><h4>Adds 2 photos</h4><div class="ev">product.photo_added</div></div>
+    </div>
+  </div>
+
+  <div class="grid" style="grid-template-columns: 1.1fr 1fr;">
+    <div class="panel">
+      <h2>Wireframe — PR-01, seller dashboard</h2>
+      <img class="shot" style="margin-top:6px" src="../../screenshot/PR-01-wireframe-seller-dashboard.png" alt="Wireframe: dashboard, photo upload sheet, empty states">
+    </div>
+
+    <div style="display:flex; flex-direction:column; gap:15px; min-height:0">
+      <div class="panel">
+        <h2>Endpoints on this path</h2>
+        <table>
+          <tr><td class="id">GET</td><td class="mono tiny">/dashboard/metrics</td><td class="ev">dashboard.viewed</td></tr>
+          <tr><td class="id">GET</td><td class="mono tiny">/recommendations/current</td><td class="ev">recommendation.delivered</td></tr>
+          <tr><td class="id">POST</td><td class="mono tiny">/recommendations/:id/dismiss</td><td class="ev">recommendation.dismissed</td></tr>
+          <tr><td class="id">POST</td><td class="mono tiny">/products/:id/photos</td><td class="ev">product.photo_added</td></tr>
+        </table>
+      </div>
+
+      <div class="panel dark">
+        <h2>Measurement</h2>
+        <p class="mono" style="font-size:10px; line-height:1.7; margin:0">
+          delivered_at + action_type + store_id<br>
+          &nbsp;&nbsp;→ event within 7 days → acted 0/1<br>
+          &nbsp;&nbsp;→ rate per variant
+        </p>
+      </div>
+
+      <div class="panel">
+        <h2>Tests &amp; decisions</h2>
+        <table>
+          <tr><td class="id">TS-01</td><td>Assignment stable · snapshot frozen · 7-day boundary exact · no personal data · events immutable</td></tr>
+          <tr><td class="id">ADR-0001</td><td>Append-only events, written in the action's transaction</td></tr>
+          <tr><td class="id">ADR-0002</td><td>Advisor copy from templates, not an LLM</td></tr>
+          <tr><td class="id">Open</td><td>D-1 hosting · D-2 auth · D-3 object storage</td></tr>
+        </table>
+      </div>
+    </div>
+  </div>
+
+  <span class="pnum">3 / 3</span>
+</section>
+
+</body>
+</html>

@@ -118,7 +118,7 @@ The five below are the ones that constrain almost every decision. The full set â
 | ID | Question | Blocks | Needed by |
 |---|---|---|---|
 | Q-1 | Exact study window start and end dates | Backlog milestones, stopping rule of the first experiment | Before M2 |
-| Q-2 | Which external API satisfies REQ-H2? Candidates: image hosting for product photos, Thai address/postcode lookup, a notification channel. A notification channel changes the recommendation exposure path and must not be introduced mid-study | REQ-H2, FEAT-H2 | Before M3 |
+| Q-2 | Which external API satisfies REQ-H2? Candidates: image hosting for product photos, Thai address/postcode lookup, a notification channel. A notification channel changes the recommendation exposure path and must not be introduced mid-study. **A language model API is no longer a candidate â€” ADR-0002 keeps one out of the advisor** | REQ-H2, FEAT-H2 | Before M3 |
 | Q-3 | Guest checkout, or accounts required for buyers? | REQ-A2, FEAT-C4 | Before M2 |
 | Q-4 | How many sellers will be onboarded, and when? | Experiment sample size and stopping rule | Before M2 |
 | Q-5 | What order statuses does a seller actually need? | REQ-C4 | Before M2 |
