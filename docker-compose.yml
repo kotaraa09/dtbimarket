@@ -9,7 +9,10 @@ services:
       POSTGRES_PASSWORD: dtbi_local_dev
       POSTGRES_DB: dtbimarket
     ports:
-      - '5433:5432'
+      # 5432 and 5433 are taken by other projects on this machine, so this is
+      # shifted again rather than fighting over a port. Only the host side
+      # moves; nothing inside the compose network cares.
+      - '5434:5432'
     volumes:
       - dtbimarket-pgdata:/var/lib/postgresql/data
     healthcheck:

@@ -25,7 +25,7 @@ import { Router } from 'express';
 import { prisma } from '@dtbi/db';
 import { emitEvent } from '../../events/emit.ts';
 import { errors } from '../../middleware/errors.ts';
-import { authedSeller, scopedStore } from '../../middleware/session.ts';
+import { authedUser, scopedStore } from '../../middleware/session.ts';
 import { loadedProduct } from '../products/loaded.ts';
 import { getStorage, photoKey } from './storage.ts';
 import { extensionFor, readUploadedImage } from './upload.ts';
@@ -38,7 +38,7 @@ export const photosRouter: Router = Router({ mergeParams: true });
 
 photosRouter.post('/', async (req, res, next) => {
   try {
-    const auth = authedSeller(res);
+    const auth = authedUser(res);
     const store = scopedStore(res);
     const product = loadedProduct(res);
 
@@ -106,7 +106,7 @@ photosRouter.post('/', async (req, res, next) => {
 
 photosRouter.delete('/:photoId', async (req, res, next) => {
   try {
-    const auth = authedSeller(res);
+    const auth = authedUser(res);
     const store = scopedStore(res);
     const product = loadedProduct(res);
 

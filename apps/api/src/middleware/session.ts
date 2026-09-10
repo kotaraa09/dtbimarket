@@ -8,6 +8,7 @@
  */
 import type { NextFunction, Request, Response } from 'express';
 import type { Store } from '@dtbi/db';
+import type { UserRole } from '@dtbi/shared';
 import type { AuthContext } from '../lib/session.ts';
 import { resolveSession } from '../lib/session.ts';
 import { errors } from './errors.ts';
@@ -43,24 +44,47 @@ export function requireAuth(
 }
 
 /**
- * Signed in as a seller. Role gates the dashboard, not the storefront
- * (database-schema.md), so this is only applied to seller routes.
+ * Signed in as one of the given roles.
+ *
+ * One place decides what a role may reach, so a new route cannot invent its own
+ * interpretation — the same reasoning that puts store scoping in one middleware
+ * rather than in each handler (REQ-A3).
+ *
+ * 401 when nobody is signed in, 403 when somebody is but holds the wrong role.
+ * The distinction matters to the client: one means "sign in", the other means
+ * "signing in again will not help".
  */
-export function requireSeller(
-  _req: Request,
-  res: Response,
-  next: NextFunction,
-): void {
-  const auth = currentAuth(res);
-  if (!auth) return next(errors.unauthorized());
-  if (auth.user.role !== 'seller' && auth.user.role !== 'admin') {
-    return next(errors.forbidden());
-  }
-  next();
+export function requireRole(...roles: readonly UserRole[]) {
+  return (_req: Request, res: Response, next: NextFunction): void => {
+    const auth = currentAuth(res);
+    if (!auth) return next(errors.unauthorized());
+    if (!roles.includes(auth.user.role)) return next(errors.forbidden());
+    next();
+  };
 }
 
-/** Convenience accessors for handlers that ran behind the guards above. */
-export function authedSeller(res: Response): AuthContext {
+/**
+ * Signed in as a seller. Role gates the dashboard, not the storefront
+ * (database-schema.md), so this is only applied to seller routes.
+ *
+ * Sellers only — an administrator is NOT admitted here. Previously admin was
+ * allowed through, which was harmless only by accident: every route behind this
+ * guard then resolves the caller's own store, and an admin has none, so it
+ * 404ed. Relying on a second guard to catch what the first should have refused
+ * is the kind of thing that stops being true when someone adds a route.
+ * Administrators have their own area.
+ */
+export const requireSeller = requireRole('seller');
+
+/** Signed in as an administrator. */
+export const requireAdmin = requireRole('admin');
+
+/**
+ * The signed-in caller, for a handler that already ran behind one of the guards
+ * above. It asserts only that somebody is signed in — the role was decided by
+ * the guard, which is why this is not named for any one role.
+ */
+export function authedUser(res: Response): AuthContext {
   const auth = currentAuth(res);
   if (!auth) throw errors.unauthorized();
   return auth;

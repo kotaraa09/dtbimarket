@@ -3,8 +3,9 @@
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { useState } from 'react';
-import type { UserDto } from '@dtbi/shared';
+import { PUBLIC_SIGNUP_ROLES, USER_ROLE_LABELS_TH, type UserDto } from '@dtbi/shared';
 import { api, ApiRequestError } from '../../lib/api';
+import { homePathFor } from '../../lib/roles';
 
 export default function SignUpPage() {
   const router = useRouter();
@@ -21,14 +22,14 @@ export default function SignUpPage() {
     const form = new FormData(e.currentTarget);
 
     try {
-      await api.post<{ user: UserDto }>('/auth/register', {
+      const created = await api.post<{ user: UserDto }>('/auth/register', {
         email: String(form.get('email') ?? ''),
         password: String(form.get('password') ?? ''),
         displayName: String(form.get('displayName') ?? ''),
-        role: 'seller',
+        role: String(form.get('role') ?? 'seller'),
       });
       // The API set the session cookie on the response.
-      router.push('/dashboard');
+      router.push(homePathFor(created.user.role));
     } catch (err) {
       if (err instanceof ApiRequestError) {
         setError(err.thaiMessage);
@@ -42,11 +43,26 @@ export default function SignUpPage() {
 
   return (
     <main className="shell narrow" style={{ paddingTop: '3rem' }}>
-      <h1>สมัครเป็นผู้ขาย</h1>
+      <h1>สมัครสมาชิก</h1>
       <p className="muted">ใช้อีเมลมหาวิทยาลัยหรืออีเมลส่วนตัวก็ได้</p>
 
       <form className="card" onSubmit={onSubmit} noValidate>
         {error ? <div className="error">{error}</div> : null}
+
+        <fieldset className="field role-choice">
+          <legend>สมัครในฐานะ</legend>
+          {PUBLIC_SIGNUP_ROLES.map((r, i) => (
+            <label key={r} className="role-option">
+              <input type="radio" name="role" value={r} defaultChecked={i === 0} />
+              <span>{USER_ROLE_LABELS_TH[r]}</span>
+            </label>
+          ))}
+          {/*
+            Only seller and buyer are offered, and that is not merely a UI
+            choice — the API refuses any other role at this endpoint. A signup
+            form that can grant admin is a signup form that grants admin.
+          */}
+        </fieldset>
 
         <div className="field">
           <label htmlFor="displayName">ชื่อที่แสดง</label>

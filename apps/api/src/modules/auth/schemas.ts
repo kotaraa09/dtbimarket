@@ -1,5 +1,5 @@
 import { z } from 'zod';
-import { USER_ROLES } from '@dtbi/shared';
+import { PUBLIC_SIGNUP_ROLES } from '@dtbi/shared';
 
 /**
  * Messages are Thai because they are displayed to the seller as-is
@@ -16,7 +16,13 @@ export const registerSchema = z.object({
     .trim()
     .min(1, { message: 'กรุณากรอกชื่อ' })
     .max(80, { message: 'ชื่อยาวเกินไป' }),
-  role: z.enum(USER_ROLES).default('seller'),
+  /**
+   * seller or buyer only. `admin` is not in this list, and that omission is the
+   * control: this endpoint is public and unauthenticated, so any role it
+   * accepts is a role a stranger can grant themselves. Administrators are
+   * created out of band by `pnpm admin:create`.
+   */
+  role: z.enum(PUBLIC_SIGNUP_ROLES).default('seller'),
 });
 
 export const loginSchema = z.object({

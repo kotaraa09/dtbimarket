@@ -16,3 +16,7 @@ dist/
 # this directory only exists so PB-10 has somewhere to write during development.
 apps/api/.uploads/
 packages/db/src/generated/
+
+# Scratch directory left behind by the headless-Edge PDF export in
+# docs/07-delivery/. Output, not a deliverable.
+docs/07-delivery/mindmap-out.pdf/

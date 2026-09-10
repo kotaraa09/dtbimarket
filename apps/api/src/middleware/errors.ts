@@ -40,6 +40,13 @@ export const errors = {
    *  anonymous caller which addresses are registered enumerates real students. */
   invalidCredentials: () =>
     new AppError(401, 'invalid_credentials', 'อีเมลหรือรหัสผ่านไม่ถูกต้อง'),
+  /** Correct credentials, but the account may not be used. */
+  accountNotActive: () =>
+    new AppError(
+      403,
+      'account_not_active',
+      'บัญชีนี้ถูกระงับการใช้งาน กรุณาติดต่อผู้ดูแลระบบ',
+    ),
   notFound: (code = 'not_found', message = 'ไม่พบรายการนี้') =>
     new AppError(404, code, message),
   conflict: (code: string, message: string) => new AppError(409, code, message),

@@ -245,3 +245,34 @@ td.num, th.num { text-align: right; font-family: var(--mono); font-variant-numer
   border-radius: 0;
   border-width: 1px 0 0;
 }
+
+/* --------------------------------------------------------------------- */
+/* Roles and admin                                                         */
+/* --------------------------------------------------------------------- */
+
+.role-choice { border: 1px solid var(--line-strong); border-radius: var(--radius-sm); padding: .6rem .8rem; }
+.role-choice legend { font-family: var(--ui); font-size: .85rem; font-weight: 500; padding: 0 .3rem; }
+.role-option { display: inline-flex; align-items: center; gap: .35rem; margin-right: 1rem; }
+.role-option input { width: auto; }
+
+.topbar.admin { background: var(--panel); border-bottom: 2px solid var(--panel-accent); }
+
+/* An operator should be able to tell at a glance that a page records what
+   they look at, rather than finding out from the audit log later. */
+.notice {
+  background: var(--accent-soft);
+  color: var(--ink);
+  border: 1px solid var(--accent);
+  border-radius: var(--radius-sm);
+  padding: .55rem .75rem;
+  margin-bottom: 1rem;
+  font-size: .88rem;
+}
+
+.tag.status-active      { background: var(--good-soft); color: var(--good); }
+.tag.status-suspended   { background: var(--warn-soft); color: var(--warn); }
+.tag.status-anonymised  { background: var(--surface-sunk); color: var(--ink-faint); border-color: var(--line-strong); }
+
+dl.kv { display: grid; grid-template-columns: minmax(120px, auto) 1fr; gap: .35rem .9rem; margin: 0; }
+dl.kv dt { color: var(--ink-muted); font-size: .85rem; font-family: var(--ui); }
+dl.kv dd { margin: 0; }

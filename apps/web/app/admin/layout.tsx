@@ -7,7 +7,15 @@ import { api } from '../../lib/api';
 import { useMe } from '../../lib/use-me';
 import { homePathFor } from '../../lib/roles';
 
-export default function DashboardLayout({
+/**
+ * The administrator area.
+ *
+ * This guard is a convenience, not the security boundary. Every route under
+ * /api/v1/admin refuses a non-admin on the server, and a client-side check can
+ * always be bypassed by someone who wants to — so it exists to avoid showing a
+ * seller a page of 403s, nothing more.
+ */
+export default function AdminLayout({
   children,
 }: {
   children: React.ReactNode;
@@ -20,30 +28,13 @@ export default function DashboardLayout({
     if (state.status === 'anonymous') router.replace('/signin');
   }, [state.status, router]);
 
-  // Sellers only. The API refuses a non-seller on every route behind this
-  // layout regardless — this just stops a buyer or an admin staring at a
-  // dashboard of failed requests.
   useEffect(() => {
-    if (state.status === 'signed-in' && state.me.user.role !== 'seller') {
+    if (state.status === 'signed-in' && state.me.user.role !== 'admin') {
       router.replace(homePathFor(state.me.user.role));
     }
   }, [state, router]);
 
-  // A seller with no store can only be on the store page — everything else
-  // needs a store to scope to, and the API would refuse anyway (404
-  // store_not_found from the store-scope middleware).
-  useEffect(() => {
-    if (
-      state.status === 'signed-in' &&
-      state.me.user.role === 'seller' &&
-      state.me.store === null &&
-      pathname !== '/dashboard/store'
-    ) {
-      router.replace('/dashboard/store');
-    }
-  }, [state, pathname, router]);
-
-  if (state.status !== 'signed-in' || state.me.user.role !== 'seller') {
+  if (state.status !== 'signed-in' || state.me.user.role !== 'admin') {
     return (
       <main className="shell">
         <p className="muted">กำลังโหลด…</p>
@@ -64,15 +55,14 @@ export default function DashboardLayout({
 
   return (
     <>
-      <header className="topbar">
+      <header className="topbar admin">
         <div className="topbar-inner">
-          <Link href="/dashboard" className="brand">
-            dtbimarket
+          <Link href="/admin" className="brand">
+            dtbimarket · ผู้ดูแลระบบ
           </Link>
           <nav>
-            {link('/dashboard', 'ภาพรวม')}
-            {link('/dashboard/products', 'สินค้า')}
-            {link('/dashboard/store', 'ข้อมูลร้าน')}
+            {link('/admin', 'ผู้ใช้')}
+            {link('/admin/audit', 'บันทึกการใช้งาน')}
           </nav>
           <button type="button" className="secondary small" onClick={signOut}>
             ออกจากระบบ

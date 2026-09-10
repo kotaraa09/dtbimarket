@@ -9,13 +9,16 @@ export default function HomePage() {
       </p>
 
       <div className="card" style={{ marginTop: '2rem' }}>
-        <h2>สำหรับผู้ขาย</h2>
+        <h2>เริ่มต้นใช้งาน</h2>
         <p className="muted">
-          สร้างร้าน เพิ่มสินค้า และดูว่าร้านของคุณเป็นอย่างไร
+          <strong>ผู้ขาย</strong> — สร้างร้าน เพิ่มสินค้า และดูว่าร้านของคุณเป็นอย่างไร
+        </p>
+        <p className="muted">
+          <strong>ผู้ซื้อ</strong> — สมัครไว้ล่วงหน้าได้ แต่หน้ารวมสินค้าและการสั่งซื้อยังไม่เปิด
         </p>
         <div className="row" style={{ marginTop: '1rem' }}>
           <Link href="/signup">
-            <button type="button">สมัครเป็นผู้ขาย</button>
+            <button type="button">สมัครสมาชิก</button>
           </Link>
           <Link href="/signin">
             <button type="button" className="secondary">
@@ -26,7 +29,8 @@ export default function HomePage() {
       </div>
 
       <p className="faint">
-        ส่วนของผู้ซื้อ — หน้ารวมสินค้าและหน้าร้าน — ยังไม่เปิด (PB-12)
+        ส่วนของผู้ซื้อ — หน้ารวมสินค้าและหน้าร้าน — ยังไม่เปิด (PB-12) ·
+        บัญชีผู้ดูแลระบบสร้างผ่านบรรทัดคำสั่งเท่านั้น ไม่ได้เปิดให้สมัครที่นี่
       </p>
     </main>
   );

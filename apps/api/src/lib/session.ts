@@ -126,6 +126,13 @@ export async function resolveSession(
   if (session.revokedAt !== null) return null;
   if (session.expiresAt.getTime() <= getClock().now().getTime()) return null;
 
+  // Checked on every request, not only at sign-in. Suspending an account has to
+  // end the sessions it already has, or a suspension does nothing until the
+  // cookie happens to expire — up to fourteen days of continued access.
+  // Suspension also revokes sessions explicitly; this is the backstop that
+  // holds even for a session created in the same instant.
+  if (session.user.status !== 'active') return null;
+
   const { store, ...user } = session.user;
   return { user, store, sessionId };
 }
@@ -136,3 +143,4 @@ export async function revokeSession(sessionId: string): Promise<void> {
     data: { revokedAt: getClock().now() },
   });
 }
+

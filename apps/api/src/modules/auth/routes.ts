@@ -13,6 +13,7 @@ import { Algorithm, hash, verify } from '@node-rs/argon2';
 import { prisma } from '@dtbi/db';
 import type { MeResponse, UserDto } from '@dtbi/shared';
 import { emitEvent } from '../../events/emit.ts';
+import { writeAudit } from '../../audit/write.ts';
 import { errors } from '../../middleware/errors.ts';
 import { validateBody, validatedBody } from '../../middleware/validate.ts';
 import {
@@ -42,11 +43,17 @@ const ARGON2 = {
   parallelism: 1,
 } as const;
 
-function toUserDto(user: { id: string; role: string; displayName: string }): UserDto {
+function toUserDto(user: {
+  id: string;
+  role: string;
+  displayName: string;
+  status: string;
+}): UserDto {
   return {
     id: user.id,
     role: user.role as UserDto['role'],
     displayName: user.displayName,
+    status: user.status as UserDto['status'],
   };
 }
 
@@ -126,14 +133,34 @@ authRouter.post('/login', validateBody(loginSchema), async (req, res, next) => {
     const ok = await verify(user.passwordHash, body.password);
     if (!ok) throw invalid();
 
-    await prisma.$transaction(async (tx) => {
-      await emitEvent(tx, {
-        type: user.role === 'seller' ? 'seller.signed_in' : 'buyer.signed_in',
-        actorType: user.role === 'seller' ? 'seller' : 'buyer',
+    // Status is checked AFTER the password, deliberately. Checking it first
+    // would tell anyone who guessed an address whether that account exists and
+    // has been suspended; checking it after tells that only to someone who
+    // already holds the password.
+    if (user.status !== 'active') throw errors.accountNotActive();
+
+    if (user.role === 'admin') {
+      // An administrator is ACT-3, not a research subject. Their sign-in goes
+      // to the operator trail, not into the study's event stream (ADR-0005).
+      //
+      // Until now this branch did not exist, so an admin signing in was
+      // recorded as `buyer.signed_in` — operator activity counted as buyer
+      // behaviour, in an append-only table.
+      await writeAudit(prisma, {
+        action: 'admin.signed_in',
         actorId: user.id,
-        isSeed: user.isSeed,
+        requestId: res.locals.requestId as string | undefined,
       });
-    });
+    } else {
+      await prisma.$transaction(async (tx) => {
+        await emitEvent(tx, {
+          type: user.role === 'seller' ? 'seller.signed_in' : 'buyer.signed_in',
+          actorType: user.role === 'seller' ? 'seller' : 'buyer',
+          actorId: user.id,
+          isSeed: user.isSeed,
+        });
+      });
+    }
 
     const sessionId = await createSession(user.id);
     res.setHeader('Set-Cookie', sessionCookie(sessionId));
