@@ -15,7 +15,7 @@ import { errors } from '../../middleware/errors.ts';
 import { validateBody, validatedBody } from '../../middleware/validate.ts';
 import {
   attachSession,
-  authedSeller,
+  authedUser,
   requireSeller,
   scopedStore,
 } from '../../middleware/session.ts';
@@ -42,7 +42,7 @@ storesRouter.post(
   validateBody(createStoreSchema),
   async (_req, res, next) => {
     try {
-      const auth = authedSeller(res);
+      const auth = authedUser(res);
       const body = validatedBody<CreateStoreInput>(res);
 
       const store = await prisma.$transaction(async (tx) => {
@@ -108,7 +108,7 @@ storesRouter.patch(
   validateBody(updateStoreSchema),
   async (req, res, next) => {
     try {
-      const auth = authedSeller(res);
+      const auth = authedUser(res);
       const store = scopedStore(res);
       const body = validatedBody<UpdateStoreInput>(res);
 

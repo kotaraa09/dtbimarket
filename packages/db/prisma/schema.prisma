@@ -53,6 +53,28 @@ enum StoreStatus {
   @@map("store_status")
 }
 
+/// `anonymised` is terminal and satisfies REQ-N21: the personal fields are
+/// overwritten while the person's telemetry stays exactly where it is. That
+/// works only because events reference people by ID and hold no personal data
+/// (REQ-N2) — which is what makes append-only and the right to erasure
+/// compatible rather than contradictory.
+enum UserStatus {
+  active
+  suspended
+  anonymised
+
+  @@map("user_status")
+}
+
+/// What kind of thing an audit entry points at. An enum rather than text
+/// because, unlike an action name, the set of things an admin can act on
+/// changes only when a new model is added — which is a migration anyway.
+enum AdminTargetType {
+  user
+
+  @@map("admin_target_type")
+}
+
 enum StoreCategory {
   food
   drinks
@@ -114,6 +136,14 @@ model User {
   /// Personal data.
   displayName String @map("display_name")
 
+  /// Gates sign-in and session resolution. `suspended` and `anonymised` accounts
+  /// cannot sign in and their live sessions stop resolving.
+  ///
+  /// Only the current state lives here. Who changed it, when, and what it was
+  /// before are in `AdminAuditLog` — one source of truth rather than a
+  /// denormalised copy that can drift from the trail (REQ-N20).
+  status UserStatus @default(active)
+
   createdAt DateTime @default(now()) @map("created_at") @db.Timestamptz(3)
   isSeed    Boolean  @default(false) @map("is_seed")
 
@@ -121,6 +151,7 @@ model User {
   sessions Session[]
   orders   Order[]
 
+  @@index([status])
   @@map("user")
 }
 
@@ -266,6 +297,65 @@ model OrderItem {
   @@index([orderId])
   @@index([productId])
   @@map("order_item")
+}
+
+// ---------------------------------------------------------------------------
+// Operator audit — APPEND ONLY
+// ---------------------------------------------------------------------------
+
+/// What an administrator did, including what they read.
+///
+/// Deliberately NOT the `Event` table (ADR-0005). `Event` is the study's
+/// measurement instrument and records the behaviour of research subjects; an
+/// admin is ACT-3, the researcher. Mixing operator activity into it would mean
+/// every analysis query has to exclude it, and the query that forgets produces
+/// a quietly wrong number months later.
+///
+/// It exists because the admin area reads personal data — that is its whole
+/// purpose, answering PDPA requests under REQ-N21. Without a trail, a
+/// compromised admin account could page through every seller's email and
+/// contact channel leaving no record, which turns a breach into one that
+/// cannot even be scoped, let alone notified accurately.
+///
+/// **Reads are recorded, not only writes.** That is the point of the table.
+///
+/// Append-only, enforced by the same trigger technique as `event`, so an admin
+/// cannot erase their own trail whatever role they connect as.
+///
+/// NO FOREIGN KEY on `actorId`, matching `Event`: an audit entry is a
+/// historical fact, and a cascade from a deleted user must not remove the
+/// record of what that user did.
+model AdminAuditLog {
+  id String @id @default(cuid())
+
+  /// e.g. `admin.user_suspended`. Values come from the constant in packages/shared.
+  action String
+
+  /// The administrator who acted.
+  actorId String @map("actor_id")
+
+  targetType AdminTargetType? @map("target_type")
+  targetId   String?          @map("target_id")
+
+  /// The same request ID that appears in the access log, so an entry here can
+  /// be tied to the request without storing anything more about it.
+  requestId String? @map("request_id")
+
+  /// IDs, counts, field names and status values only.
+  /// **Never the personal data that was read** — an audit trail that copies the
+  /// thing it protects has doubled the problem rather than solved it.
+  metadata Json @default("{}")
+
+  occurredAt DateTime @map("occurred_at") @db.Timestamptz(3)
+
+  /// Present for consistency with the repository-wide convention. The seed
+  /// creates no administrators, so nothing sets it today.
+  isSeed Boolean @default(false) @map("is_seed")
+
+  @@index([actorId, occurredAt])
+  @@index([occurredAt])
+  @@index([action])
+  @@map("admin_audit_log")
 }
 
 // ---------------------------------------------------------------------------

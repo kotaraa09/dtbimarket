@@ -41,6 +41,15 @@ Storage must be running **before** you seed: the seed writes real placeholder
 images, and without a bucket it warns and leaves photo rows with nothing behind
 them, which show up as broken thumbnails.
 
+Create an administrator (there is no other way — the signup form cannot make one):
+
+```bash
+pnpm admin:create you@example.com
+```
+
+It prints a generated password once. Set `ADMIN_PASSWORD` in the environment
+first if you need a specific one.
+
 Run web and api together:
 
 ```bash
@@ -67,7 +76,7 @@ cp .env.test.example .env.test
 Fill in `SESSION_SECRET` there too, apply the migrations to it, then run everything:
 
 ```bash
-DATABASE_URL="postgresql://dtbi:dtbi_local_dev@localhost:5433/dtbimarket_test?schema=public" pnpm exec prisma migrate deploy
+DATABASE_URL="postgresql://dtbi:dtbi_local_dev@localhost:5434/dtbimarket_test?schema=public" pnpm exec prisma migrate deploy
 ```
 
 ```bash
@@ -83,6 +92,11 @@ pnpm test
 **Prisma asks before destroying data.** `prisma migrate reset` will not proceed without explicit confirmation. That is correct; do not script around it.
 
 **Seed rows carry `is_seed = true`, and so do actions taken on them.** Signing in as a seeded seller and changing a price writes a seeded event. That is deliberate: demo activity must never appear in an analysis query or in a real seller's numbers (REQ-D3).
+
+**Thai arguments through pnpm on Windows.** `pnpm admin:create x@y.z "ผู้ดูแลระบบ"`
+fails while the same command run directly with `node` succeeds — the Thai
+argument is mangled on the way through. Pass ASCII, or omit the display name and
+let it default.
 
 **Thai text and the Windows console.** `curl` on Windows mangles Thai in a command-line argument before it is sent, and `psql` in a cp1252 console prints `?` for characters that are stored correctly. Neither is an application bug. Check with `octet_length()` in SQL, or use a client that sends UTF-8, before concluding anything is wrong.
 

@@ -13,6 +13,32 @@
 export const USER_ROLES = ['seller', 'buyer', 'admin'] as const;
 export type UserRole = (typeof USER_ROLES)[number];
 
+/**
+ * The roles a stranger may give themselves at the public registration endpoint.
+ *
+ * `admin` is absent, and that absence is the security control. Accepting the
+ * role from the request body and writing it straight through is how a public
+ * signup form becomes a privilege escalation; administrators are created out of
+ * band by `pnpm admin:create`.
+ */
+export const PUBLIC_SIGNUP_ROLES = ['seller', 'buyer'] as const;
+export type PublicSignupRole = (typeof PUBLIC_SIGNUP_ROLES)[number];
+
+export const USER_STATUSES = ['active', 'suspended', 'anonymised'] as const;
+export type UserStatus = (typeof USER_STATUSES)[number];
+
+export const USER_ROLE_LABELS_TH: Record<UserRole, string> = {
+  seller: 'ผู้ขาย',
+  buyer: 'ผู้ซื้อ',
+  admin: 'ผู้ดูแลระบบ',
+};
+
+export const USER_STATUS_LABELS_TH: Record<UserStatus, string> = {
+  active: 'ใช้งานอยู่',
+  suspended: 'ถูกระงับ',
+  anonymised: 'ลบข้อมูลแล้ว',
+};
+
 export const STORE_STATUSES = ['active', 'paused'] as const;
 export type StoreStatus = (typeof STORE_STATUSES)[number];
 
@@ -80,6 +106,54 @@ export interface UserDto {
   id: string;
   role: UserRole;
   displayName: string;
+  status: UserStatus;
+}
+
+// ---------------------------------------------------------------------------
+// Admin
+// ---------------------------------------------------------------------------
+
+/**
+ * The list view. Carries no personal data at all — deliberately, so that
+ * browsing the user list is not itself a disclosure. `email` and `displayName`
+ * appear only in the detail view, which writes an audit entry naming the fields
+ * it revealed (REQ-N21, ADR-0005).
+ */
+export interface AdminUserSummaryDto {
+  id: string;
+  role: UserRole;
+  status: UserStatus;
+  hasStore: boolean;
+  createdAt: string;
+  isSeed: boolean;
+}
+
+/** The detail view. Reading this is an auditable disclosure of personal data. */
+export interface AdminUserDetailDto extends AdminUserSummaryDto {
+  email: string;
+  displayName: string;
+  store: {
+    id: string;
+    name: string;
+    slug: string;
+    contactChannel: string | null;
+  } | null;
+}
+
+export interface AdminAuditEntryDto {
+  id: string;
+  action: string;
+  actorId: string;
+  targetType: string | null;
+  targetId: string | null;
+  requestId: string | null;
+  metadata: Record<string, string | number | boolean>;
+  occurredAt: string;
+}
+
+export interface Paginated<T> {
+  items: T[];
+  nextCursor: string | null;
 }
 
 export interface StoreDto {

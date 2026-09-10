@@ -12,6 +12,7 @@ An ADR is written when the choice is made, not afterwards. The value is in the r
 | `0002-templated-advisor-copy.md` | Advisor copy comes from deterministic templates filled from `metric_snapshot`, not from a language model |
 | `0003-server-side-session-cookie.md` | A session is a database row; the httpOnly cookie carries only its signed ID, so a withdrawing seller can actually be signed out |
 | `0004-s3-compatible-object-storage.md` | Product photos go to an S3-compatible bucket behind one adapter; the provider stays configuration until D-1 is settled |
+| `0005-operator-audit-log.md` | Administrator actions — reads included — go to a separate append-only audit table, never into `Event` |
 
 ## Waiting to be written
 

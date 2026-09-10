@@ -31,3 +31,29 @@ export function validateBody<T>(schema: ZodType<T>) {
 export function validatedBody<T>(res: Response): T {
   return res.locals.body as T;
 }
+
+/**
+ * Query-string validation. Same boundary rule as the body: parse and reject
+ * before any business logic, after the auth guards.
+ */
+export function validateQuery<T>(schema: ZodType<T>) {
+  return (req: Request, res: Response, next: NextFunction): void => {
+    const result = schema.safeParse(req.query);
+
+    if (!result.success) {
+      const details: Record<string, string> = {};
+      for (const issue of result.error.issues) {
+        const key = issue.path.join('.') || '_';
+        details[key] ??= issue.message;
+      }
+      return next(errors.validation(details));
+    }
+
+    res.locals.query = result.data;
+    next();
+  };
+}
+
+export function validatedQuery<T>(res: Response): T {
+  return res.locals.query as T;
+}

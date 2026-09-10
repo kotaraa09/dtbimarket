@@ -19,6 +19,7 @@ import { errorHandler, notFoundHandler } from './middleware/errors.ts';
 import { authRouter } from './modules/auth/routes.ts';
 import { storesRouter } from './modules/stores/routes.ts';
 import { productsRouter } from './modules/products/routes.ts';
+import { adminRouter } from './modules/admin/routes.ts';
 
 export const app: Express = express();
 
@@ -119,6 +120,7 @@ const v1: Router = express.Router();
 v1.use('/auth', authRouter);
 v1.use('/stores', storesRouter);
 v1.use('/products', productsRouter);
+v1.use('/admin', adminRouter);
 
 app.use('/api/v1', v1);
 

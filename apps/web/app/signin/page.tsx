@@ -5,6 +5,7 @@ import Link from 'next/link';
 import { useState } from 'react';
 import type { UserDto } from '@dtbi/shared';
 import { api, ApiRequestError } from '../../lib/api';
+import { homePathFor } from '../../lib/roles';
 
 export default function SignInPage() {
   const router = useRouter();
@@ -19,11 +20,11 @@ export default function SignInPage() {
     const form = new FormData(e.currentTarget);
 
     try {
-      await api.post<{ user: UserDto }>('/auth/login', {
+      const { user } = await api.post<{ user: UserDto }>('/auth/login', {
         email: String(form.get('email') ?? ''),
         password: String(form.get('password') ?? ''),
       });
-      router.push('/dashboard');
+      router.push(homePathFor(user.role));
     } catch (err) {
       setError(
         err instanceof ApiRequestError ? err.thaiMessage : 'เกิดข้อผิดพลาด',
@@ -61,7 +62,7 @@ export default function SignInPage() {
       </form>
 
       <p className="faint">
-        ยังไม่มีบัญชี? <Link href="/signup">สมัครเป็นผู้ขาย</Link>
+        ยังไม่มีบัญชี? <Link href="/signup">สมัครสมาชิก</Link>
       </p>
     </main>
   );

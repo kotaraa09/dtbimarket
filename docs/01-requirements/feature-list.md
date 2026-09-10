@@ -29,10 +29,22 @@ The canonical event enum lives in `packages/shared/src/events.ts`. This table an
 | ID | Feature | Actor | REQ | PB | Events | Pri | Status |
 |---|---|---|---|---|---|---|---|
 | FEAT-A1 | Seller registration and sign-in | Seller | REQ-A1 | PB-06 | `seller.registered`, `seller.signed_in` | Must | **done** |
-| FEAT-A2 | Buyer registration and sign-in | Buyer | REQ-A2 | PB-14 | `buyer.registered`, `buyer.signed_in` | Must | todo |
+| FEAT-A2 | Buyer registration and sign-in | Buyer | REQ-A2 | PB-14 | `buyer.registered`, `buyer.signed_in` | Must | **done** (auth only — see note) |
 | FEAT-A3 | Store-scoped authorisation on every store-owned route | System | REQ-A3 | PB-07 | none — a guard, not an action | Must | **done** |
 
+| FEAT-A4 | Role-based access control: seller, buyer and admin areas, gated in one middleware | System | REQ-A3 | — | none — a guard, not an action | Must | **done** |
+| FEAT-A5 | Administrator area: user list, PDPA disclosure view, suspend, reinstate, anonymise | Admin | REQ-A4, REQ-N21 | — | none in `Event` — see below | Must | **done** |
+| FEAT-A6 | Append-only operator audit log, recording admin reads and writes | System | REQ-N21, REQ-A4 | — | `admin.*` actions in `AdminAuditLog`, not `Event` | Must | **done** |
+
 FEAT-A3 emits nothing on purpose: it changes nothing a user does, it only refuses requests that should never have succeeded. Recording that decision here is what stops it being re-litigated later.
+
+**FEAT-A2 is authentication only.** A buyer can register, sign in and sign out. Browsing, the cart and orders are M2. This does not prejudge **Q-3** (guest checkout versus required accounts), which governs whether `Order.buyer_id` is nullable — nothing in this slice touches `Order`.
+
+**FEAT-A5 and FEAT-A6 are the one recorded exception to rule 1.** Administrator actions do not write to `Event`. They write to `AdminAuditLog`, which is append-only and enforced by the same database trigger — so nothing goes unrecorded; the exception is about *which* table, not *whether*. The reasoning is ADR-0005, and the short version is that `Event` measures research subjects while an administrator is ACT-3, so putting operator activity in it would oblige every analysis query to filter it back out.
+
+Unlike the `User`-row approach first proposed, this trail records **reads as well as writes**. The admin area's normal work is looking at personal data to answer a PDPA request, and a trail that captured only mutations could not answer the question that matters after a compromised account: what did they see?
+
+**FEAT-A5 deliberately cannot change anyone's role.** No requirement asks for it, and an endpoint that grants roles is exactly the escalation surface this work closed.
 
 ## B. Store and catalogue
 
@@ -112,7 +124,7 @@ FEAT-H2 cannot be built until Q-2 is answered. A notification channel is the tem
 
 | Coursework requirement | Covered by | Status |
 |---|---|---|
-| Authentication | FEAT-A1, FEAT-A2, FEAT-A3 | seller side **done**; buyer (FEAT-A2) is PB-14 |
+| Authentication | FEAT-A1, FEAT-A2, FEAT-A3, FEAT-A4 | **done** — seller, buyer and admin, with role-based access control |
 | CRUD | FEAT-B2 (product), FEAT-B1 (store) | **done** |
 | Dashboard | FEAT-D1 | todo |
 | Cloud deployment | FEAT-H1 | todo |

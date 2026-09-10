@@ -25,7 +25,7 @@ import { errors } from '../../middleware/errors.ts';
 import { validateBody, validatedBody } from '../../middleware/validate.ts';
 import {
   attachSession,
-  authedSeller,
+  authedUser,
   requireSeller,
   scopedStore,
 } from '../../middleware/session.ts';
@@ -97,7 +97,7 @@ productsRouter.post(
   validateBody(createProductSchema),
   async (_req, res, next) => {
     try {
-      const auth = authedSeller(res);
+      const auth = authedUser(res);
       const store = scopedStore(res);
       const body = validatedBody<CreateProductInput>(res);
 
@@ -154,7 +154,7 @@ productsRouter.patch(
   validateBody(updateProductSchema),
   async (_req, res, next) => {
     try {
-      const auth = authedSeller(res);
+      const auth = authedUser(res);
       const store = scopedStore(res);
       const product = loadedProduct(res);
       const body = validatedBody<UpdateProductInput>(res);
@@ -222,7 +222,7 @@ productsRouter.patch(
   validateBody(changePriceSchema),
   async (_req, res, next) => {
     try {
-      const auth = authedSeller(res);
+      const auth = authedUser(res);
       const store = scopedStore(res);
       const product = loadedProduct(res);
       const { priceSatang } = validatedBody<ChangePriceInput>(res);
@@ -278,7 +278,7 @@ productsRouter.patch(
   validateBody(changeStockSchema),
   async (_req, res, next) => {
     try {
-      const auth = authedSeller(res);
+      const auth = authedUser(res);
       const store = scopedStore(res);
       const product = loadedProduct(res);
       const { stock } = validatedBody<ChangeStockInput>(res);
@@ -330,7 +330,7 @@ productsRouter.post(
   requireOwnProduct,
   async (_req, res, next) => {
     try {
-      const auth = authedSeller(res);
+      const auth = authedUser(res);
       const store = scopedStore(res);
       const product = loadedProduct(res);
 
@@ -381,7 +381,7 @@ productsRouter.post(
   requireOwnProduct,
   async (_req, res, next) => {
     try {
-      const auth = authedSeller(res);
+      const auth = authedUser(res);
       const store = scopedStore(res);
       const product = loadedProduct(res);
 
@@ -432,7 +432,7 @@ productsRouter.delete(
   requireOwnProduct,
   async (_req, res, next) => {
     try {
-      const auth = authedSeller(res);
+      const auth = authedUser(res);
       const store = scopedStore(res);
       const product = loadedProduct(res);
 
