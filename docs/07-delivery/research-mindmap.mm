@@ -1,49 +1,30 @@
 <map version="1.0.1">
-<node TEXT="Students must run a real business and build it a website. Almost none go online. The business exists on paper, but not in the market - so there is no data to learn from.">
-<node TEXT="1. Does an AI advisor build the seller's own judgement, or replace it?   [CHOSEN]" POSITION="right"><font BOLD="true" SIZE="13"/>
-<node TEXT="Theory: Cognitive offloading &amp; skill decay (Bainbridge; Risko &amp; Gilbert)"><font ITALIC="true" SIZE="11"/>
-<node TEXT="H1.1 In the off weeks, previously advised sellers make fewer unprompted improvements"/>
-<node TEXT="H1.2 The drop is largest for sellers with no prior business experience"/>
+<node TEXT="IP: SMEs have low sales/income, even when they already sell online.">
+<node TEXT="RQ: Business owners lack the control and knowledge to use their own data to improve sales." POSITION="right"><font BOLD="true" SIZE="14"/>
+<node TEXT="T1: Provide AI tools that read their own data and suggest what to change" POSITION="right"><font BOLD="true" SIZE="12"/>
+<node TEXT="their own numbers, turned into advice"><font ITALIC="true" SIZE="10"/></node>
+<node TEXT="H0 AI tools don't help owners improve their sales."/>
+<node TEXT="H1 AI tools help owners improve their sales."/>
 </node>
-<node TEXT="Theory: Attention narrowing (Goodhart; measurement fixation)"><font ITALIC="true" SIZE="11"/>
-<node TEXT="H1.3 Sellers improve what the AI mentions and let unmentioned things drift"/>
+<node TEXT="T2: Provide a dashboard that shows their own data" POSITION="right"><font BOLD="true" SIZE="12"/>
+<node TEXT="shows the numbers, gives no advice"><font ITALIC="true" SIZE="10"/></node>
+<node TEXT="H0 A dashboard alone doesn't help owners improve their sales."/>
+<node TEXT="H1 A dashboard alone helps owners improve their sales."/>
 </node>
+<node TEXT="T3: Provide comparison with similar businesses" POSITION="right"><font BOLD="true" SIZE="12"/>
+<node TEXT="how they compare to others like them"><font ITALIC="true" SIZE="10"/></node>
+<node TEXT="H0 Comparison doesn't help owners improve their sales."/>
+<node TEXT="H1 Comparison helps owners improve their sales."/>
 </node>
-<node TEXT="2. How much of the work should the AI do for the student?   [CHOSEN]" POSITION="right"><font BOLD="true" SIZE="13"/>
-<node TEXT="Theory: Effort-compliance (dual-process accounts)"><font ITALIC="true" SIZE="11"/>
-<node TEXT="H2.1 Action rate rises as the AI does more of the work"/>
+<node TEXT="T4: Provide a consultant to review their data" POSITION="left"><font BOLD="true" SIZE="12"/>
+<node TEXT="a person reads the same numbers"><font ITALIC="true" SIZE="10"/></node>
+<node TEXT="H0 A consultant doesn't help owners improve their sales."/>
+<node TEXT="H1 A consultant helps owners improve their sales."/>
 </node>
-<node TEXT="Theory: Psychological ownership (Pierce, Kostova &amp; Dirks)"><font ITALIC="true" SIZE="11"/>
-<node TEXT="H2.2 It reverses for tasks sellers feel are theirs"/>
-</node>
-</node>
-<node TEXT="3. Which kind of information makes a seller act?" POSITION="right"><font BOLD="true" SIZE="13"/>
-<node TEXT="Theory: Regulatory focus (Higgins)"><font ITALIC="true" SIZE="11"/>
-<node TEXT="H3.1 Sellers act more on outside opportunity than on criticism of themselves"/>
-</node>
-<node TEXT="Theory: Social comparison (Festinger)"><font ITALIC="true" SIZE="11"/>
-<node TEXT="H3.2 Sellers act more when shown how they compare to similar stores"/>
-</node>
-<node TEXT="Theory: Trust calibration (uncertainty communication)"><font ITALIC="true" SIZE="11"/>
-<node TEXT="H3.3 Advice that admits uncertainty is acted on less at first, dismissed less over time"/>
-</node>
-</node>
-<node TEXT="4. Can current AI models actually advise a micro-business at all?" POSITION="right"><font BOLD="true" SIZE="13"/>
-<node TEXT="Theory: Construct validity (Cronbach &amp; Meehl)"><font ITALIC="true" SIZE="11"/>
-<node TEXT="H4.1 Models state numbers that are not in the data"/>
-<node TEXT="H4.2 They write well and diagnose badly"/>
-<node TEXT="H4.4 Exam score does not predict what sellers actually do"/>
-</node>
-<node TEXT="Theory: Language coverage (multilingual model capability)"><font ITALIC="true" SIZE="11"/>
-<node TEXT="H4.3 Thai models win on language, lose on diagnosis"/>
-</node>
-</node>
-<node TEXT="5. When every competitor gets the same advice, does anyone gain?" POSITION="right"><font BOLD="true" SIZE="13"/>
-<node TEXT="Theory: Resource-based view (Barney)"><font ITALIC="true" SIZE="11"/>
-<node TEXT="H5.1 A store gains only when few rivals followed the same advice"/>
-</node>
-<node TEXT="Theory: Mimetic isomorphism (DiMaggio &amp; Powell)"><font ITALIC="true" SIZE="11"/>
-<node TEXT="H5.2 Categories where everyone got the same advice end up more alike"/>
+<node TEXT="T5: Provide a best-practice checklist" POSITION="left"><font BOLD="true" SIZE="12"/>
+<node TEXT="same advice for everyone"><font ITALIC="true" SIZE="10"/></node>
+<node TEXT="H0 A checklist doesn't help owners improve their sales."/>
+<node TEXT="H1 A checklist helps owners improve their sales."/>
 </node>
 </node>
 </node>
