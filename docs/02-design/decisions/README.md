@@ -22,6 +22,8 @@ These are named in `architecture.md` and block work that is already in the backl
 |---|---|---|
 | D-1 | Hosting and managed database provider | PB-04, and the storage provider in ADR-0004 |
 
+**D-1 now has a proposed ADR — `0006-hosting-and-database-provider.md`, status `proposed`, not accepted.** It is drafted because the owner asked to see the options costed before choosing, and it stays out of the index table above until it is accepted. Nothing may be provisioned against it in the meantime.
+
 D-4 was decided on 2026-08-28 and became ADR-0002.
 D-2 was decided on 2026-09-03 and became ADR-0003.
 D-3 was decided on 2026-09-03 and became ADR-0004.

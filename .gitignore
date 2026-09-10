@@ -12,6 +12,24 @@ dist/
 !.env.example
 !.env.test.example
 
+# Research working documents. Untracked at the owner's request, 2026-09-10.
+#
+# READ THIS BEFORE RELYING ON IT. These files are no longer versioned or backed
+# up by git, and they are the thesis. Two consequences were accepted knowingly:
+#
+#  1. analysis-plan.md is a pre-registration document — it is written before the
+#     data exists, and its value depends on being able to show WHEN. The commit
+#     date was that evidence. There is now no record of it in this repository,
+#     so if an examiner asks whether the analysis was chosen before or after the
+#     results were seen, the repository cannot answer.
+#  2. docs/03-research/experiments/TEMPLATE.md goes with them, so a fresh clone
+#     has no experiment template and the new-experiment procedure in
+#     .claude/skills/ has nothing to copy from.
+#
+# Keep a backup somewhere that is not this laptop.
+docs/03-research/
+docs/00-archived/hypotheses-2026-08.md
+
 # Local uploads. Product photos go to object storage in deployment (D-3);
 # this directory only exists so PB-10 has somewhere to write during development.
 apps/api/.uploads/
