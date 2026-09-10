@@ -26,6 +26,17 @@ generator client {
   generatedFileExtension = "ts"
   importFileExtension    = "ts"
   previewFeatures = ["postgresqlExtensions"]
+
+  // The query engine is a native binary, generated per platform. "native"
+  // alone produces a Windows engine on this machine and nothing that runs in
+  // deployment, so the first request on a deployed API fails to connect.
+  //
+  // Both Linux targets are listed rather than one: rhel-openssl-3.0.x is what
+  // Vercel's Amazon Linux runtime needs, debian-openssl-3.0.x is what a
+  // container host such as Render needs. ADR-0006 names Render as the fallback
+  // if the API does not build on Vercel, and listing both means that fallback
+  // does not require another schema change mid-deploy.
+  binaryTargets = ["native", "rhel-openssl-3.0.x", "debian-openssl-3.0.x"]
 }
 
 datasource db {
