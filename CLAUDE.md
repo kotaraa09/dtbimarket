@@ -8,7 +8,7 @@ A shared e-commerce platform for student-run micro-businesses at Mae Fah Luang U
 
 It serves three purposes at once. **When they conflict, this is the priority order:**
 
-1. **Research.** This is a master's thesis. The finding is: *how the framing of an AI recommendation affects whether a micro-entrepreneur acts on it*, measured by the 7-day action rate.
+1. **Research.** This is a master's thesis. The question is: *do AI tools that read a business's own data help its owner improve sales?* — solution **T1** in `docs/03-research/hypotheses.md`, against **H0** (no effect). The measurable primary outcome is the 7-day action rate; see `docs/03-research/analysis-plan.md`. The earlier framing comparison is superseded — `docs/00-archived/hypotheses-2026-08.md`.
 2. **Coursework.** Must demonstrate authentication, CRUD, cloud deployment, a dashboard, and an external API integration.
 3. **Product.** Real sellers, real buyers, real money.
 
