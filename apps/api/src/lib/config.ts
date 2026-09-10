@@ -80,7 +80,13 @@ const storage =
 
 export const config = {
   nodeEnv,
-  port: Number(optional('API_PORT', '4000')),
+  /**
+   * Container platforms inject `PORT` and require the process to bind exactly
+   * it — Render assigns the value and routes to it, so hard-coding a port
+   * means the health check never passes. `API_PORT` stays the local knob, and
+   * is the fallback when nothing is injected.
+   */
+  port: Number(optional('PORT', optional('API_PORT', '4000'))),
   databaseUrl: required('DATABASE_URL'),
   sessionSecret,
   webOrigin: optional('WEB_ORIGIN', 'http://localhost:3000'),
