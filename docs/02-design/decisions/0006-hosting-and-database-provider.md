@@ -68,3 +68,26 @@ One fact narrows the field more than it appears to. **REQ-C5: payment is arrange
 **Consequence: ADR-0004 is honoured without amendment.** The provider arrives as `STORAGE_*` configuration, and the `s3` driver that development exercises against MinIO is the one that ships.
 
 **Consequence: `services/advisor` has no home yet.** It does not exist, so nothing is blocked today. Vercel's Python runtime and the Azure credit are both candidates, and REQ-N30's 800 ms budget is the constraint that will decide it. This ADR does not pretend to have decided it.
+
+---
+
+## Update, 2026-09-10 — the fallback was taken for the API
+
+Stage 1 was carried out and **the API did not build on Vercel.** The specific failure, after two rounds of configuration:
+
+```
+Cannot find module '/var/task/apps/api/src/server.ts'
+  imported from /var/task/apps/api/api/index.js
+```
+
+Vercel's builder compiled the entry point and left its `../src/server.ts` import unresolved, shipping no `src/` at all. This is not a misconfiguration to correct. `apps/api` is written to run as raw TypeScript through Node's native type stripping and imports every module by its `.ts` extension; Vercel's Node builder does not follow those. Forcing `src/` into the bundle would only move the problem one layer down into `@dtbi/db`'s generated client, which imports the same way — and the alternative, emitting JavaScript, is barred by `noEmit` and `allowImportingTsExtensions` and would mean rewriting every import specifier in two packages to satisfy a host.
+
+**The API is therefore on Render**, which runs `node apps/api/src/server.ts` as a long-lived process — the same execution model as a development machine, so there is nothing to work around. `render.yaml` at the repository root is the blueprint. `apps/web` stays on Vercel, and the `/api/v1/*` rewrite in `next.config.ts` is unchanged and verified working: a request to the web origin reached the API service.
+
+Three things this vindicates or costs:
+
+- **The `binaryTargets` decision paid for itself.** `debian-openssl-3.0.x` was listed when the Vercel path still looked likely, precisely so this move would not need a schema change. It did not.
+- **`config.ts` now reads `PORT` before `API_PORT`.** Render assigns the port and routes to it; a hard-coded port means the health check never passes.
+- **The sleep problem is now the headline risk.** A free Render service stops after fifteen minutes idle and takes roughly 50 seconds to wake. That is a worse availability story than Vercel would have given, and it makes Stage 2 more urgent rather than less.
+
+The status of this ADR is unchanged — still `proposed`, still awaiting the owner. What changed is that the fallback it named is now the main path for one of the two applications, which is worth recording where the original reasoning lives rather than only in the log.

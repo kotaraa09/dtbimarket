@@ -1,7 +1,0 @@
-Vercel requires an output directory to exist after the build, and an API
-produces no static files. This keeps the directory in the repository so it
-is present regardless of how the build command's working directory resolves.
-
-Deliberately empty otherwise: every request then falls through the rewrite
-in vercel.json to Express, so / returns the API's own JSON 404 rather than
-a static page shadowing the application.

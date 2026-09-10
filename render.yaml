@@ -1,0 +1,70 @@
+# Render blueprint for the API.
+#
+# ADR-0006 chose Vercel for both apps and named Render as the fallback if the
+# API did not build there. It did not: Vercel's builder compiled api/index.ts
+# and left its `../src/server.ts` import unresolved, because this API is
+# written to run as raw TypeScript through Node's native type stripping and
+# imports every module by its .ts extension. Render runs the process the same
+# way a laptop does, so there is nothing to work around.
+#
+# apps/web stays on Vercel. Only the API moved.
+#
+# Secrets are declared with `sync: false`, which makes Render prompt for the
+# value in its dashboard instead of reading it from this file. Nothing secret
+# is committed (REQ-N3, CLAUDE.md rule 9).
+
+services:
+  - type: web
+    name: dtbimarket-api
+    runtime: node
+    plan: free
+    # Singapore, because Neon is in ap-southeast-1 and the buyers are in Chiang
+    # Rai. An API in Oregon would put the Pacific between every query and its
+    # database, which REQ-N28's 400 ms dashboard budget cannot absorb.
+    region: singapore
+    branch: main
+    healthCheckPath: /health
+
+    # The Prisma client is generated code that .gitignore excludes, so the
+    # build must produce it or the service starts against a client that does
+    # not exist.
+    buildCommand: corepack enable && pnpm install --frozen-lockfile && pnpm db:generate
+    # No compile step. src/server.ts calls listen() when it is the process
+    # entry point, which it is here.
+    startCommand: node apps/api/src/server.ts
+
+    envVars:
+      # Node 23.6+ strips TypeScript types without a flag. Below that the
+      # start command fails immediately on the first type annotation.
+      - key: NODE_VERSION
+        value: "24"
+      - key: NODE_ENV
+        value: production
+
+      # Prompted for in the Render dashboard.
+      - key: DATABASE_URL
+        sync: false
+      - key: DIRECT_URL
+        sync: false
+      - key: SESSION_SECRET
+        sync: false
+      # The Vercel web deployment's URL.
+      - key: WEB_ORIGIN
+        sync: false
+
+      # Object storage (ADR-0004). The API refuses to boot in production on
+      # any driver but s3.
+      - key: STORAGE_DRIVER
+        value: s3
+      - key: STORAGE_BUCKET
+        value: dtbimarket-photos
+      - key: STORAGE_REGION
+        value: auto
+      - key: STORAGE_FORCE_PATH_STYLE
+        value: "false"
+      - key: STORAGE_ENDPOINT
+        sync: false
+      - key: STORAGE_ACCESS_KEY_ID
+        sync: false
+      - key: STORAGE_SECRET_ACCESS_KEY
+        sync: false
