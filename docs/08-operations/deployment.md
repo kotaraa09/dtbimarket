@@ -18,7 +18,14 @@ Order matters. **Deploy the API first** — the web project needs its URL.
 | Build Command | from `apps/api/vercel.json` — leave the dashboard field empty |
 | Node version | 22.x or later |
 
-`vercel.json` sets the build command to `cd ../.. && pnpm db:generate`. This is not optional: the Prisma client is generated code and `.gitignore` excludes it, so without this step the function is deployed against a client that does not exist.
+`vercel.json` sets the build command to `cd ../.. && pnpm db:generate && mkdir -p apps/api/public`, and `outputDirectory` to `public`.
+
+Both halves are load-bearing:
+
+- **`pnpm db:generate`.** The Prisma client is generated code and `.gitignore` excludes it, so without this the function deploys against a client that does not exist. In practice `@prisma/client`'s own postinstall also runs it, because `prisma.config.ts` is detected — but relying on another package's postinstall hook to produce your build output is not a thing to depend on.
+- **`mkdir -p apps/api/public`.** Vercel expects a static output directory and fails the build with *No Output Directory named "public" found* without one. An API produces no static files, so the directory is created empty at build time rather than committed. Leaving it empty is deliberate: every path then falls through the rewrite to Express, so `/` returns the API's own JSON 404 rather than a stray HTML page.
+
+Do **not** set `outputDirectory` to `"."` to get past that error. It would publish the contents of `apps/api` — source code included — as static files.
 
 `api/index.ts` re-exports the Express app from `src/server.ts`, which only calls `listen()` when it is the process entry point. The same file therefore serves a container locally and a function here.
 
