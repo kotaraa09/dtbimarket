@@ -54,6 +54,18 @@ export const EVENT_TYPES = [
   // F. Experiment infrastructure
   'experiment.started',
   'experiment.stopped',
+
+  // G. AI assistant — NOT the advisor (ADR-0007)
+  //
+  // Separate names from the `recommendation.*` family on purpose. The advisor
+  // delivers templated copy under a variant and is scored by the 7-day action
+  // rate; this assistant is a button a seller presses. One shared prefix would
+  // make an analysis query that counts "recommendations" silently include
+  // button presses, and the mistake would not be visible in the number.
+  'ai.description_suggested',
+  'ai.summary_generated',
+  'ai.summary_dismissed',
+  'ai.call_failed',
 ] as const;
 
 export type EventType = (typeof EVENT_TYPES)[number];
@@ -82,6 +94,11 @@ export type ActorType = 'seller' | 'buyer' | 'system';
 export const ACTION_TYPE_EVENTS = {
   photo_added: ['product.photo_added'],
 } as const satisfies Record<string, readonly EventType[]>;
+
+// The `ai.*` events above are deliberately absent from this mapping. No
+// recommendation asks a seller to press the AI button, so none of them can be
+// the target of one, and adding them here would mean a recommendation could be
+// scored as acted-on by an action nobody recommended.
 
 export type ActionType = keyof typeof ACTION_TYPE_EVENTS;
 

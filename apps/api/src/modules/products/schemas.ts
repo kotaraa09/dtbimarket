@@ -33,6 +33,17 @@ export const createProductSchema = z.object({
 export const updateProductSchema = z.object({
   name: z.string().trim().min(1).max(120).optional(),
   description: z.string().trim().max(1000).optional(),
+  /**
+   * Whether this description started life as the Level 1 AI draft (ADR-0007).
+   *
+   * It changes nothing about what is saved. It exists so that
+   * `product.description_changed` can carry `from_ai`, which is the only way to
+   * tell "the model wrote something" apart from "the seller kept what the model
+   * wrote" — and the second is the one worth knowing. Defaults to false, so a
+   * caller that does not know about the flag records a human edit, which is the
+   * safer wrong answer of the two.
+   */
+  fromAi: z.boolean().default(false),
 });
 
 export const changePriceSchema = z.object({ priceSatang });

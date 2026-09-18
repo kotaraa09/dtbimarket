@@ -78,6 +78,45 @@ const storage =
       } as const)
     : ({ driver: 'memory' as const } as const);
 
+// ---------------------------------------------------------------------------
+// AI assistant (ADR-0007)
+// ---------------------------------------------------------------------------
+
+/**
+ * Optional, unlike every other secret in this file.
+ *
+ * `SESSION_SECRET` is required because a process that boots without it signs
+ * everybody out at random. The AI key is different: without it, exactly two
+ * buttons stop working and say so in Thai, and everything else — sign-in,
+ * catalogue, photos, events — is unaffected. Refusing to boot would take the
+ * whole platform down to protect a writing aid.
+ *
+ * It is also what makes the deploy order survivable: the service can start on
+ * Render before the key has been pasted into the dashboard.
+ *
+ * The key is read here and nowhere else. Nothing logs it, no endpoint returns
+ * it, and it never reaches the browser — which is the difference between this
+ * and the lab worksheet, where the key ships to the client and F12 reveals it.
+ */
+const openRouterKey = optional('OPENROUTER_API_KEY', '').trim();
+
+const ai = openRouterKey
+  ? ({
+      enabled: true as const,
+      apiKey: openRouterKey,
+      /** The course model. A 404 from OpenRouter means this name has moved. */
+      model: optional('OPENROUTER_MODEL', 'google/gemini-2.5-flash-lite'),
+      endpoint: 'https://openrouter.ai/api/v1/chat/completions',
+      /**
+       * Hard ceiling on a single call. The worksheet sets 15 s; the reason it
+       * has to exist at all is that without one the seller's button spins for
+       * as long as the network feels like, and Render's own request timeout
+       * kills the connection with no error the client can explain.
+       */
+      timeoutMs: Number(optional('OPENROUTER_TIMEOUT_MS', '15000')),
+    } as const)
+  : ({ enabled: false as const } as const);
+
 export const config = {
   nodeEnv,
   /**
@@ -91,6 +130,7 @@ export const config = {
   sessionSecret,
   webOrigin: optional('WEB_ORIGIN', 'http://localhost:3000'),
   storage,
+  ai,
 } as const;
 
 export const isProduction = isProd;

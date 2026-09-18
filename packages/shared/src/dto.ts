@@ -239,3 +239,73 @@ export function parseBahtToSatang(input: string): number | null {
   if (!Number.isSafeInteger(whole)) return null;
   return whole * 100 + frac;
 }
+
+// ---------------------------------------------------------------------------
+// AI assistant (ADR-0007) — NOT the advisor
+// ---------------------------------------------------------------------------
+
+/**
+ * The one label both AI features must carry.
+ *
+ * It lives here rather than being typed into each page so the two cannot drift
+ * apart. A seller who sees "ข้อเสนอจาก AI" on one screen and nothing on the
+ * other has been told that only one of them is machine-written, which is worse
+ * than labelling neither.
+ */
+export const AI_DISCLAIMER_TH = 'ข้อเสนอจาก AI — โปรดตรวจสอบก่อนยืนยัน';
+
+/** Level 1. A draft, returned and not saved. Saving is a separate act by the seller. */
+export interface AiDescriptionSuggestionDto {
+  suggestion: string;
+  model: string;
+}
+
+/**
+ * The figures a Level 2 summary was generated from, frozen at that moment.
+ *
+ * Every number the model is allowed to state comes from this object, and the
+ * panel renders it beside the text so the seller can check the summary against
+ * it. That is the grounding rule of CLAUDE.md rule 7 applied to a feature that
+ * is not the advisor: a model that cannot point at a row does not get to claim.
+ *
+ * Money is satang, like everywhere else. Counts exclude nothing — a seed store's
+ * summary is about the seed store, and `isSeed` on the row keeps it out of
+ * analysis rather than out of the arithmetic the seller sees.
+ */
+export interface AiSummaryMetricSnapshot {
+  storeCategory: StoreCategory;
+  productCount: number;
+  publishedCount: number;
+  draftCount: number;
+  unpublishedCount: number;
+  /** Published products carrying fewer than two photos. */
+  photosMissingCount: number;
+  photoCount: number;
+  outOfStockCount: number;
+  lowestPriceSatang: number | null;
+  highestPriceSatang: number | null;
+  stockValueSatang: number;
+  /** Days since the most recent product was created. Null when there are none. */
+  daysSinceNewestProduct: number | null;
+
+  /**
+   * From the event table, not the product table. Counting `updatedAt` would
+   * miss a publish and double-count a price change followed by a stock change;
+   * the events are the record of what the seller actually did.
+   */
+  catalogueChangesLast7Days: number;
+  daysSinceLastCatalogueChange: number | null;
+
+  computedAt: string;
+}
+
+export interface AiSummaryDto {
+  id: string;
+  summary: string;
+  suggestedAction: string;
+  metricSnapshot: AiSummaryMetricSnapshot;
+  model: string;
+  promptVersion: string;
+  generatedAt: string;
+  dismissedAt: string | null;
+}

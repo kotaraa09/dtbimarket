@@ -37,10 +37,15 @@ Everything not secret is already in `render.yaml`. Render prompts for the rest, 
 | `STORAGE_ENDPOINT` | `https://<ACCOUNT_ID>.r2.cloudflarestorage.com` |
 | `STORAGE_ACCESS_KEY_ID` | from the R2 API token |
 | `STORAGE_SECRET_ACCESS_KEY` | from the R2 API token |
+| `OPENROUTER_API_KEY` | the course-issued key — **optional**, see below |
 
 ```
 node -e "console.log(require('crypto').randomBytes(32).toString('hex'))"
 ```
+
+`OPENROUTER_API_KEY` is the only optional one (ADR-0007). Without it the service still boots and everything except the two AI buttons works; those report in Thai that the key is missing. That is deliberate — the service has to be able to start before the value exists in the dashboard, and a missing writing aid must not take down sign-in.
+
+Paste it into the Render dashboard and nowhere else. It is never in this repository, and the check before every push is below under **Before pushing**. If it is ever exposed, it has to be revoked and reissued by the instructor: deleting the commit does not un-publish it, because it was copied the moment it was pushed.
 
 `NODE_ENV=production` is set in the blueprint. That is what makes `config.ts` refuse to boot on a non-`s3` storage driver, which is intended (ADR-0004): a non-durable driver loses every product photo on deploy, and photo count is the metric the first recommendation is built on.
 
@@ -104,3 +109,25 @@ DTBI_ENV_FILE=.env.neon pnpm db:deploy
 **Neon's free compute scales to zero after five minutes idle.** The first request after a quiet period will miss REQ-N28's 400 ms p95. Accepted for now; ADR-0006 Stage 2 is where it is fixed, before the study window opens.
 
 **Backups.** Neon's free plan holds a six-hour restore window, which is not REQ-N35's daily backup. Until Stage 2 this is covered by a scheduled `pg_dump` to the bucket, and REQ-N35's restore rehearsal is a gate on opening the study window — not a task for after the first incident.
+
+---
+
+## Before pushing
+
+The AI key is the one secret in this project that a person types by hand, so it
+is the one that ends up in a file it should not. Two commands, every time:
+
+```bash
+git status --porcelain
+```
+
+```bash
+git grep -I -n "sk-or" -- . ':!*.md' || echo "clean: no key in tracked files"
+```
+
+`.env` must not appear in the first, and the second must find nothing. `.env`
+and `.env.*` are covered by `.gitignore`, with `.env.example` and
+`.env.test.example` allowed back — and neither template holds a value.
+
+A key that has already been pushed is not fixed by deleting the commit. Tell the
+instructor to revoke it first, then clean up.

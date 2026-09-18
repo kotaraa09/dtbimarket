@@ -20,6 +20,7 @@ import { authRouter } from './modules/auth/routes.ts';
 import { storesRouter } from './modules/stores/routes.ts';
 import { productsRouter } from './modules/products/routes.ts';
 import { adminRouter } from './modules/admin/routes.ts';
+import { aiRouter } from './modules/ai/routes.ts';
 
 export const app: Express = express();
 
@@ -121,6 +122,8 @@ v1.use('/auth', authRouter);
 v1.use('/stores', storesRouter);
 v1.use('/products', productsRouter);
 v1.use('/admin', adminRouter);
+// ADR-0007. Not the advisor — see the header of modules/ai/routes.ts.
+v1.use('/ai', aiRouter);
 
 app.use('/api/v1', v1);
 

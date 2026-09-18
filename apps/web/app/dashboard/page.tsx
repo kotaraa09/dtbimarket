@@ -1,9 +1,15 @@
 'use client';
 
 import Link from 'next/link';
-import { useEffect, useState } from 'react';
-import { formatSatang, type ProductDto } from '@dtbi/shared';
-import { api } from '../../lib/api';
+import { useCallback, useEffect, useState } from 'react';
+import {
+  AI_DISCLAIMER_TH,
+  formatSatang,
+  type AiSummaryDto,
+  type AiSummaryMetricSnapshot,
+  type ProductDto,
+} from '@dtbi/shared';
+import { api, ApiRequestError } from '../../lib/api';
 import { useMe } from '../../lib/use-me';
 
 /**
@@ -76,6 +82,8 @@ export default function DashboardPage() {
             </div>
           </div>
 
+          <AiSummaryCard />
+
           <div className="card">
             <h2>ยังไม่มีในหน้านี้</h2>
             <p className="muted">
@@ -84,7 +92,8 @@ export default function DashboardPage() {
               แทนที่จะเดา
             </p>
             <p className="faint">
-              คำแนะนำจากผู้ช่วย AI จะปรากฏที่นี่ใน PB-24
+              คำแนะนำจากผู้ช่วยแนะนำ (advisor) ที่สุ่มตามกลุ่มทดลอง
+              จะปรากฏที่นี่ใน PB-24 และเป็นคนละอย่างกับสรุปด้านบน
             </p>
           </div>
 
@@ -114,6 +123,155 @@ export default function DashboardPage() {
           </div>
         </>
       )}
+    </>
+  );
+}
+
+/**
+ * Level 2 of the week-8 AI assistant (ADR-0007).
+ *
+ * This is NOT the advisor. The advisor delivers templated copy under a randomised
+ * variant and is scored by the 7-day action rate (ADR-0002); this is a button
+ * the seller presses, producing text nobody randomised and nothing scores. The
+ * two are kept visually and verbally distinct on purpose — a seller who cannot
+ * tell them apart is a seller whose experiment exposure cannot be interpreted.
+ *
+ * The snapshot is rendered underneath the summary rather than hidden behind a
+ * toggle. Every number in the text has to appear in that list, so the list is
+ * how the seller checks the summary instead of trusting it.
+ */
+function AiSummaryCard() {
+  const [summary, setSummary] = useState<AiSummaryDto | null>(null);
+  const [enabled, setEnabled] = useState(true);
+  const [loaded, setLoaded] = useState(false);
+  const [busy, setBusy] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+
+  const load = useCallback(async () => {
+    try {
+      const r = await api.get<{ enabled: boolean; summary: AiSummaryDto | null }>(
+        '/ai/summary',
+      );
+      setEnabled(r.enabled);
+      setSummary(r.summary);
+    } catch {
+      // A dashboard that fails to load because an optional panel could not
+      // fetch is a worse outcome than a panel that quietly offers the button.
+    } finally {
+      setLoaded(true);
+    }
+  }, []);
+
+  useEffect(() => {
+    void load();
+  }, [load]);
+
+  async function generate() {
+    setBusy(true);
+    setError(null);
+    try {
+      const r = await api.post<{ summary: AiSummaryDto }>('/ai/summary');
+      setSummary(r.summary);
+    } catch (err) {
+      setError(
+        err instanceof ApiRequestError ? err.thaiMessage : 'เรียก AI ไม่สำเร็จ',
+      );
+    } finally {
+      setBusy(false);
+    }
+  }
+
+  async function dismiss(id: string) {
+    setBusy(true);
+    try {
+      await api.post(`/ai/summary/${id}/dismiss`);
+      setSummary(null);
+    } catch (err) {
+      setError(
+        err instanceof ApiRequestError ? err.thaiMessage : 'ปิดสรุปไม่สำเร็จ',
+      );
+    } finally {
+      setBusy(false);
+    }
+  }
+
+  return (
+    <div className="card">
+      <div className="spread">
+        <h2>ผู้ช่วย AI สรุปร้าน</h2>
+        <button type="button" disabled={busy || !enabled} onClick={() => void generate()}>
+          {busy ? 'กำลังอ่านข้อมูลร้าน…' : summary ? 'สรุปใหม่' : 'ให้ AI สรุปร้านของคุณ'}
+        </button>
+      </div>
+
+      <p className="muted">
+        อ่านสินค้า รูปสินค้า และประวัติการแก้ไขร้านของคุณ แล้วสรุปให้อ่าน
+        — ไม่เปลี่ยนแปลงอะไรในร้านเอง
+      </p>
+
+      {!enabled ? (
+        <p className="faint">ยังไม่ได้ตั้งค่าคีย์ AI บนเซิร์ฟเวอร์ — ส่วนอื่นใช้งานได้ตามปกติ</p>
+      ) : null}
+
+      {error ? <div className="error">{error}</div> : null}
+
+      {!loaded ? (
+        <p className="muted">กำลังโหลด…</p>
+      ) : summary ? (
+        <div className="ai-panel">
+          <span className="ai-label">{AI_DISCLAIMER_TH}</span>
+          <p>{summary.summary}</p>
+          <p className="ai-action">{summary.suggestedAction}</p>
+
+          <SnapshotFacts snapshot={summary.metricSnapshot} />
+
+          <div className="row" style={{ marginTop: '.6rem' }}>
+            <button
+              type="button"
+              className="secondary small"
+              disabled={busy}
+              onClick={() => void dismiss(summary.id)}
+            >
+              ปิดสรุปนี้
+            </button>
+            <span className="faint">
+              {new Date(summary.generatedAt).toLocaleString('th-TH')} ·{' '}
+              <span className="mono">{summary.model}</span>
+            </span>
+          </div>
+        </div>
+      ) : (
+        <p className="faint">ยังไม่มีสรุป — กดปุ่มด้านบนเพื่อให้ AI อ่านข้อมูลร้านแล้วสรุปให้</p>
+      )}
+    </div>
+  );
+}
+
+/** The figures the summary was written from, exactly as they were then. */
+function SnapshotFacts({ snapshot }: { snapshot: AiSummaryMetricSnapshot }) {
+  const rows: [string, string][] = [
+    ['สินค้าทั้งหมด', `${snapshot.productCount}`],
+    ['เผยแพร่อยู่', `${snapshot.publishedCount}`],
+    ['ฉบับร่าง', `${snapshot.draftCount}`],
+    ['มีรูปน้อยกว่า 2 รูป', `${snapshot.photosMissingCount}`],
+    ['รูปทั้งหมด', `${snapshot.photoCount}`],
+    ['ของหมด', `${snapshot.outOfStockCount}`],
+    ['แก้ไขร้านใน 7 วัน', `${snapshot.catalogueChangesLast7Days} ครั้ง`],
+    ['มูลค่าสต๊อก', `฿${formatSatang(snapshot.stockValueSatang)}`],
+  ];
+
+  return (
+    <>
+      <div className="faint" style={{ marginTop: '.5rem' }}>
+        ตัวเลขที่ AI ใช้เขียนสรุปนี้ — ทุกตัวเลขในข้อความต้องมาจากรายการนี้
+      </div>
+      <ul className="ai-facts">
+        {rows.map(([label, value]) => (
+          <li key={label}>
+            {label}: <span className="num">{value}</span>
+          </li>
+        ))}
+      </ul>
     </>
   );
 }
