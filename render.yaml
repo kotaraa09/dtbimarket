@@ -28,7 +28,24 @@ services:
     # The Prisma client is generated code that .gitignore excludes, so the
     # build must produce it or the service starts against a client that does
     # not exist.
-    buildCommand: corepack enable && pnpm install --frozen-lockfile && pnpm db:generate
+    #
+    # `corepack enable` on its own fails on this image:
+    #
+    #   Internal Error: EROFS: read-only file system, unlink '/usr/bin/pnpm'
+    #
+    # Render's Node 24 image now ships its own pnpm at /usr/bin/pnpm, on a
+    # read-only filesystem, and plain `corepack enable` tries to replace that
+    # symlink. This worked until the image changed underneath the service, so
+    # the failure arrived on a deploy where nothing about the build had changed.
+    #
+    # `--install-directory` puts the shims somewhere writable instead, and the
+    # PATH export makes them win over the preinstalled one. Using the image's
+    # pnpm directly was the other option and was rejected: its version is
+    # whatever the image happens to carry, and `--frozen-lockfile` against a
+    # lockfile written by a different major version fails in a way that reads
+    # like a dependency problem. `packageManager` in package.json pins
+    # pnpm@11.25.0 and corepack honours it.
+    buildCommand: mkdir -p "$HOME/bin" && corepack enable --install-directory "$HOME/bin" && export PATH="$HOME/bin:$PATH" && pnpm install --frozen-lockfile && pnpm db:generate
     # No compile step. src/server.ts calls listen() when it is the process
     # entry point, which it is here.
     startCommand: node apps/api/src/server.ts
