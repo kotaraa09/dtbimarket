@@ -50,7 +50,7 @@ pnpm dev                    # web on :3000, api on :4000
 ```
 
 ```bash
-pnpm test        # 45 API tests, including the append-only triggers
+pnpm test        # 61 API tests, including the append-only triggers
 pnpm typecheck
 pnpm lint
 ```
@@ -65,9 +65,23 @@ pnpm lint
 | CRUD | Done | Seller creates, edits, publishes, unpublishes and deletes products |
 | Cloud deployment | Done | The link at the top of this file |
 | Dashboard | Done | Seller store metrics — views, orders, product count, photo coverage |
-| External API integration | **Open** | REQ-H2, question Q-2 in `docs/01-requirements/requirements.md` |
+| External API integration | Done | OpenRouter, in the AI assistant below — `docs/02-design/decisions/0007-ai-assistant-beside-the-advisor.md` |
 
-The last row is genuinely open rather than merely undocumented. The R2 integration is a candidate, but `docs/02-design/decisions/0004-s3-compatible-object-storage.md` deliberately declines to claim it satisfies REQ-H2, so the decision is still to be made.
+## The AI assistant
+
+Two features, both for the signed-in seller, both reachable from the links at the top of this file.
+
+**Level 1 — draft a product description.** Dashboard → สินค้า → แก้ไข on any product → **ให้ AI ช่วยเขียนคำอธิบาย**. The draft appears labelled as a machine suggestion; nothing is saved until the seller presses save, and they can edit it first or throw it away.
+
+**Level 2 — summarise the shop.** Dashboard → **ให้ AI สรุปร้านของคุณ**. It reads the seller's products, their photos and the event history of the shop, writes a Thai summary and one suggested next step, stores both with the exact figures they came from, and logs the call. It changes nothing in the shop; the seller acts or does not.
+
+Three things are worth pointing at while testing it:
+
+- **The numbers are checked, not trusted.** Every run of digits in the generated summary has to appear in the snapshot the model was given, or the summary is refused and the refusal is logged. The snapshot is printed underneath the text so it can be checked by eye.
+- **The key is server-side.** `OPENROUTER_API_KEY` is read by `apps/api` and never reaches the browser — dev tools on the deployed site show a call to `/api/v1/ai/...` and no key. `.env` is gitignored and `.env.example` carries the name with no value.
+- **Failures are recorded and do not block anything.** A timeout, a bad key or an ungrounded answer writes a row to `ai_run_log`, emits `ai.call_failed`, and shows a Thai message that says what the seller can still do. Writing the description by hand was always available.
+
+This is **not** the AI advisor the thesis is about. That one produces its copy from deterministic templates and is randomised per seller — `docs/02-design/decisions/0002-templated-advisor-copy.md` explains why a language model is kept out of it, and ADR-0007 explains why this assistant is allowed to exist beside it.
 
 ## Documentation
 

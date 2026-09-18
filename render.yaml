@@ -68,3 +68,11 @@ services:
         sync: false
       - key: STORAGE_SECRET_ACCESS_KEY
         sync: false
+
+      # AI assistant (ADR-0007). Optional — the service boots without it and
+      # the two AI buttons report that the key is missing, in Thai. Pasted into
+      # the Render dashboard, never into this file.
+      - key: OPENROUTER_API_KEY
+        sync: false
+      - key: OPENROUTER_MODEL
+        value: google/gemini-2.5-flash-lite

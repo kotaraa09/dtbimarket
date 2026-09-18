@@ -302,6 +302,10 @@ describe('event emission', { skip }, () => {
       name_changed: true,
       description_length_before: 0,
       description_length_after: 'ติดต่อ 081-234-5678'.length,
+      // ADR-0007. A caller that says nothing records a human edit, which is the
+      // safer of the two wrong answers: an AI draft miscounted as hand-written
+      // understates the feature, while the reverse would overstate it.
+      from_ai: false,
     });
   });
 });

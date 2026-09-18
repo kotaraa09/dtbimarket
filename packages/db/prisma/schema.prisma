@@ -134,6 +134,28 @@ enum ActorType {
   @@map("actor_type")
 }
 
+/// Which of the two AI assistant features a run belongs to.
+///
+/// Neither of these is the advisor. ADR-0002 keeps a language model out of the
+/// path that produces advisor copy, and ADR-0007 records why this assistant is
+/// allowed to exist beside it: it is a writing aid and a read-only summary, it
+/// carries no `variant_id`, and it is never delivered as a `Recommendation`.
+enum AiRunKind {
+  /// Level 1 — drafts a Thai product description for the seller to edit.
+  product_description
+  /// Level 2 — reads the store's own catalogue and summarises it.
+  store_summary
+
+  @@map("ai_run_kind")
+}
+
+enum AiRunStatus {
+  ok
+  failed
+
+  @@map("ai_run_status")
+}
+
 // ---------------------------------------------------------------------------
 // Commerce
 // ---------------------------------------------------------------------------
@@ -214,9 +236,11 @@ model Store {
   updatedAt DateTime @updatedAt @map("updated_at") @db.Timestamptz(3)
   isSeed    Boolean  @default(false) @map("is_seed")
 
-  owner    User      @relation(fields: [ownerId], references: [id], onDelete: Cascade)
-  products Product[]
-  orders   Order[]
+  owner       User        @relation(fields: [ownerId], references: [id], onDelete: Cascade)
+  products    Product[]
+  orders      Order[]
+  aiSummaries AiSummary[]
+  aiRuns      AiRunLog[]
 
   @@map("store")
 }
@@ -423,4 +447,115 @@ model Event {
   /// Counts.
   @@index([type])
   @@map("event")
+}
+
+// ---------------------------------------------------------------------------
+// AI assistant (week 8 coursework) — NOT the advisor
+// ---------------------------------------------------------------------------
+//
+// Read ADR-0007 before changing anything here.
+//
+// These two tables exist so the language-model feature required by the course
+// can ship without touching `Recommendation`, which does not exist yet and
+// whose shape CLAUDE.md puts on the ask-before-doing list. Nothing here is the
+// study's instrument:
+//
+//   - no `variant_id`, because nothing here is randomised
+//   - no `action_type`, because nothing here is scored by the 7-day action rate
+//   - the seller sees it only after pressing a button, never as a delivery
+//
+// When PB-19/PB-21 land, `Recommendation` arrives beside these rather than
+// replacing them, and the advisor keeps producing its copy from templates
+// (ADR-0002).
+
+/// One Level 2 summary: what the model wrote, and the numbers it was given.
+///
+/// `metricSnapshot` is frozen at generation time for the same reason
+/// `Recommendation.metric_snapshot` is: the seller may fix the problem an hour
+/// later, and anyone reading the summary afterwards needs to know what was true
+/// when it was written. It is also the grounding check — every figure in
+/// `summary` has to appear here, or the text is not supportable.
+model AiSummary {
+  id      String @id @default(cuid())
+  storeId String @map("store_id")
+
+  /// Thai, shown to the seller. Model output, reviewed by nobody — which is why
+  /// it is presented with an "ข้อเสนอจาก AI" label and changes nothing on its own.
+  summary String
+
+  /// The single next step the model proposed. Advisory text, not an instruction
+  /// the system acts on: no status, price, photo or publication state anywhere
+  /// in this repository is changed by a row in this table.
+  suggestedAction String @map("suggested_action")
+
+  /// The exact figures the prompt was built from. Keys are documented in
+  /// apps/api/src/modules/ai/snapshot.ts.
+  metricSnapshot Json @map("metric_snapshot")
+
+  /// Which model and which prompt produced this. Two summaries written weeks
+  /// apart are not comparable unless both are known.
+  model         String
+  promptVersion String @map("prompt_version")
+
+  generatedAt DateTime  @map("generated_at") @db.Timestamptz(3)
+  /// Set when the seller dismisses the panel. The row stays; only the panel goes.
+  dismissedAt DateTime? @map("dismissed_at") @db.Timestamptz(3)
+
+  isSeed Boolean @default(false) @map("is_seed")
+
+  store Store      @relation(fields: [storeId], references: [id], onDelete: Cascade)
+  runs  AiRunLog[]
+
+  /// "the newest summary for this store", which is the only query the panel makes.
+  @@index([storeId, generatedAt])
+  @@map("ai_summary")
+}
+
+/// The work log: one row per call to the model, successful or not.
+///
+/// This is the `aiLog` of the lab worksheet. It is append-only by convention
+/// rather than by trigger — it is an operational record, not a measurement
+/// instrument, and ADR-0005's reasoning applies: mixing it into `Event` would
+/// put model-provider latency into a table that analysis reads.
+///
+/// **PDPA (CLAUDE.md rule 8).** `promptText` is the literal text sent to
+/// OpenRouter. It is built only from store name, store category, product name,
+/// price, stock and counts. `contactChannel`, `displayName` and `email` are
+/// never in it, and `assertNoContactData` in openrouter.ts refuses the call if
+/// one appears. Free text a seller typed is not echoed back into a prompt.
+model AiRunLog {
+  id      String @id @default(cuid())
+  storeId String @map("store_id")
+
+  /// Null for a Level 1 run, and for a Level 2 run that failed before writing.
+  summaryId String? @map("summary_id")
+
+  kind   AiRunKind
+  status AiRunStatus
+
+  model         String
+  promptVersion String @map("prompt_version")
+
+  /// Exactly what was sent. See the PDPA note above.
+  promptText String @map("prompt_text")
+
+  /// Exactly what came back. Null when the call failed.
+  responseText String? @map("response_text")
+
+  /// `timeout`, `status_401`, `empty_response` … the same codes the seller's
+  /// Thai error message is chosen from.
+  errorCode String? @map("error_code")
+
+  /// Wall clock for the call, so "the AI is slow today" is answerable.
+  durationMs Int @map("duration_ms")
+
+  createdAt DateTime @map("created_at") @db.Timestamptz(3)
+  isSeed    Boolean  @default(false) @map("is_seed")
+
+  store   Store      @relation(fields: [storeId], references: [id], onDelete: Cascade)
+  summary AiSummary? @relation(fields: [summaryId], references: [id], onDelete: SetNull)
+
+  @@index([storeId, createdAt])
+  @@index([summaryId])
+  @@map("ai_run_log")
 }

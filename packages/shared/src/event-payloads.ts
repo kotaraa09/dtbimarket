@@ -38,6 +38,10 @@ export const EVENT_PAYLOAD_KEYS = {
     'name_changed',
     'description_length_before',
     'description_length_after',
+    // Whether the seller started from the Level 1 AI draft. Additive: rows
+    // written before ADR-0007 simply do not carry the key, which is what
+    // append-only means in practice — old rows keep their old shape.
+    'from_ai',
   ],
   'product.deleted': ['status_before', 'photo_count'],
   'product.published': ['photo_count'],
@@ -71,6 +75,20 @@ export const EVENT_PAYLOAD_KEYS = {
 
   'experiment.started': ['experiment_id'],
   'experiment.stopped': ['experiment_id'],
+
+  // Lengths and counts, never the prompt and never the generated text. The full
+  // text of both lives in `ai_run_log`, which is an operational record; putting
+  // it here would push free text a seller typed into the table the study reads.
+  'ai.description_suggested': ['suggestion_length', 'duration_ms'],
+  'ai.summary_generated': [
+    'summary_id',
+    'product_count',
+    'published_count',
+    'photos_missing_count',
+    'duration_ms',
+  ],
+  'ai.summary_dismissed': ['summary_id', 'age_minutes'],
+  'ai.call_failed': ['kind', 'error_code', 'duration_ms'],
 } as const satisfies Record<EventType, readonly string[]>;
 
 /** Flat primitives only. Nested objects are where a `buyer` with a

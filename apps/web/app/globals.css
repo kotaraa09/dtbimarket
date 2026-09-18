@@ -276,3 +276,45 @@ td.num, th.num { text-align: right; font-family: var(--mono); font-variant-numer
 dl.kv { display: grid; grid-template-columns: minmax(120px, auto) 1fr; gap: .35rem .9rem; margin: 0; }
 dl.kv dt { color: var(--ink-muted); font-size: .85rem; font-family: var(--ui); }
 dl.kv dd { margin: 0; }
+
+/* --- AI assistant (ADR-0007) ------------------------------------------- */
+/*
+ * Everything machine-written sits inside .ai-panel, and .ai-panel always
+ * carries .ai-label. One rule, so a future panel cannot be added without the
+ * label: a seller who cannot tell which text a model wrote has no way to know
+ * which text to check.
+ */
+.ai-panel {
+  border: 1px dashed var(--accent);
+  background: var(--accent-soft);
+  border-radius: var(--radius-sm);
+  padding: .75rem .85rem;
+  margin: .6rem 0;
+}
+.ai-label {
+  display: block;
+  font-family: var(--ui);
+  font-size: .75rem;
+  font-weight: 600;
+  color: var(--accent);
+  margin-bottom: .4rem;
+}
+.ai-panel p { margin: .2rem 0 .5rem; }
+.ai-action {
+  font-weight: 500;
+  border-left: 2px solid var(--accent);
+  padding-left: .6rem;
+}
+/* The snapshot, rendered beside the text so the seller can check it rather
+   than trust it. Small on purpose — it is evidence, not the message. */
+.ai-facts {
+  list-style: none;
+  padding: 0;
+  margin: .5rem 0 0;
+  font-size: .78rem;
+  color: var(--ink-muted);
+  display: grid;
+  gap: .1rem .9rem;
+  grid-template-columns: repeat(auto-fit, minmax(170px, 1fr));
+}
+.ai-facts .num { font-family: var(--mono); font-variant-numeric: tabular-nums; }

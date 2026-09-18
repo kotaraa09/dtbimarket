@@ -3,8 +3,10 @@
 import { useCallback, useEffect, useState } from 'react';
 import { useRef } from 'react';
 import {
+  AI_DISCLAIMER_TH,
   formatSatang,
   parseBahtToSatang,
+  type AiDescriptionSuggestionDto,
   type ProductDto,
 } from '@dtbi/shared';
 import { api, ApiRequestError } from '../../../lib/api';
@@ -183,6 +185,35 @@ function ProductRow({
   const [name, setName] = useState(p.name);
   const [description, setDescription] = useState(p.description ?? '');
 
+  // Level 1 (ADR-0007). Its own busy flag, separate from `busy`: asking the AI
+  // must not lock the price field, and a slow model must not make the rest of
+  // the row look broken.
+  const [aiDraft, setAiDraft] = useState<string | null>(null);
+  const [aiBusy, setAiBusy] = useState(false);
+  const [aiError, setAiError] = useState<string | null>(null);
+  /** True once the seller has accepted a draft, until the next save. */
+  const [fromAi, setFromAi] = useState(false);
+
+  async function askAi() {
+    setAiBusy(true);
+    setAiError(null);
+    setAiDraft(null);
+    try {
+      const r = await api.post<AiDescriptionSuggestionDto>(
+        `/ai/products/${p.id}/description`,
+      );
+      setAiDraft(r.suggestion);
+    } catch (err) {
+      // The form stays usable. The seller could always write this themselves,
+      // and a failed model call must not take that away.
+      setAiError(
+        err instanceof ApiRequestError ? err.thaiMessage : 'เรียก AI ไม่สำเร็จ',
+      );
+    } finally {
+      setAiBusy(false);
+    }
+  }
+
   return (
     <>
       <tr>
@@ -240,13 +271,69 @@ function ProductRow({
                 value={description}
                 onChange={(e) => setDescription(e.target.value)}
               />
+
+              {/* Level 1. Disabled while it runs, so a second press cannot
+                  spend a second call on the same question. */}
+              <div className="row" style={{ marginTop: '.4rem' }}>
+                <button
+                  type="button"
+                  className="secondary small"
+                  disabled={aiBusy}
+                  onClick={() => void askAi()}
+                >
+                  {aiBusy ? 'กำลังให้ AI ช่วยเขียน…' : 'ให้ AI ช่วยเขียนคำอธิบาย'}
+                </button>
+                {fromAi ? (
+                  <span className="faint">เริ่มจากข้อความของ AI</span>
+                ) : null}
+              </div>
+
+              {aiError ? <div className="error">{aiError}</div> : null}
+
+              {aiDraft !== null ? (
+                <div className="ai-panel">
+                  <span className="ai-label">{AI_DISCLAIMER_TH}</span>
+                  <p>{aiDraft}</p>
+                  <div className="row">
+                    {/* Nothing is saved here. The draft goes into the textarea
+                        and the seller still has to press save — the AI never
+                        writes to the product on its own. */}
+                    <button
+                      type="button"
+                      className="small"
+                      onClick={() => {
+                        setDescription(aiDraft);
+                        setFromAi(true);
+                        setAiDraft(null);
+                      }}
+                    >
+                      ใช้ข้อความนี้
+                    </button>
+                    <button
+                      type="button"
+                      className="secondary small"
+                      onClick={() => setAiDraft(null)}
+                    >
+                      ไม่ใช้
+                    </button>
+                  </div>
+                </div>
+              ) : null}
+
               <button
                 type="button"
                 className="small"
                 style={{ marginTop: '.4rem' }}
                 disabled={busy}
                 onClick={() =>
-                  run(p.id, () => api.patch(`/products/${p.id}`, { name, description }))
+                  run(p.id, async () => {
+                    await api.patch(`/products/${p.id}`, {
+                      name,
+                      description,
+                      fromAi,
+                    });
+                    setFromAi(false);
+                  })
                 }
               >
                 บันทึกชื่อ/คำอธิบาย

@@ -192,6 +192,10 @@ productsRouter.patch(
             name_changed: nameChanged,
             description_length_before: product.description?.length ?? 0,
             description_length_after: next_.description?.length ?? 0,
+            // Only meaningful when the description actually moved. A rename
+            // made while an AI draft happened to be on screen is not the AI
+            // having written anything.
+            from_ai: descriptionChanged && body.fromAi,
           },
         });
 
