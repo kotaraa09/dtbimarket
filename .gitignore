@@ -38,3 +38,6 @@ packages/db/src/generated/
 # Scratch directory left behind by the headless-Edge PDF export in
 # docs/07-delivery/. Output, not a deliverable.
 docs/07-delivery/mindmap-out.pdf/
+
+# Playwright output. test-results.md is the committed summary; the raw run is not.
+e2e-results/
