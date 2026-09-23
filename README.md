@@ -2,6 +2,17 @@
 
 **Live: https://dtbimarket-web.vercel.app**
 
+**Test results: [test-results.md](test-results.md)** — 5 of 5 end-to-end tests passing against the live site, including the two security tests. Last run 2026-09-23.
+
+| Module 2 deliverable | Where |
+|---|---|
+| Spec | [spec.md](spec.md) |
+| Helpers, each on its own model | [.claude/agents/](.claude/agents/) — `data-api` (opus), `web-ui` (sonnet), `docs-log` (haiku), `tester` (sonnet) |
+| Tests | [e2e/seller-products.spec.ts](e2e/seller-products.spec.ts), run with `pnpm test:e2e` |
+| Carried to Module 3 | [BACKLOG.md](BACKLOG.md) |
+
+Data is stored in PostgreSQL on Neon, not Firestore — [spec.md](spec.md) says why at the end.
+
 ### Test accounts
 
 Both are sellers. Sign in at [/signin](https://dtbimarket-web.vercel.app/signin).
@@ -51,6 +62,7 @@ pnpm dev                    # web on :3000, api on :4000
 
 ```bash
 pnpm test        # 61 API tests, including the append-only triggers
+pnpm test:e2e    # 5 Playwright tests against the live site (BASE_URL to override)
 pnpm typecheck
 pnpm lint
 ```
